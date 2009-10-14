@@ -67,10 +67,6 @@ class Item
     end
   end
 
-  def restrictions
-    []
-  end
-
   def name
     self.class.to_s.sub(/^Item::/, '').downcase.to_sym
   end
@@ -95,12 +91,20 @@ class Item
     end
   end
 
-  class Cola < Item; end
+  class Cola < Item
+    def restrictions
+      []
+    end
+  end
 
   class CannedHaggis < Item
     # the common-case implementation of Item.name doesn't work here
     def name
       :canned_haggis
+    end
+
+    def restrictions
+      []
     end
   end
 end
