@@ -20,7 +20,11 @@ module Restriction
 
     def check
       age = HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
-      age >= @minimum_age
+      if age >= @minimum_age
+        true
+      else
+        false
+      end
     end
   end
 
