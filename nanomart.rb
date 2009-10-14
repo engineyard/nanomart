@@ -13,14 +13,24 @@ def process_transaction_for(item_type)
 end
 
 module Restriction
-  class Age
-    def initialize(minimum_age)
-      @minimum_age = minimum_age
-    end
+  DRINKING_AGE = 21
+  SMOKING_AGE = 18
 
+  class DrinkingAge
     def check
       age = HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
-      if age >= @minimum_age
+      if age >= DRINKING_AGE
+        true
+      else
+        false
+      end
+    end
+  end
+
+  class SmokingAge
+    def check
+      age = HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
+      if age >= SMOKING_AGE
         true
       else
         false
@@ -36,8 +46,6 @@ module Restriction
 end
 
 class Item
-  DRINKING_AGE = 21
-  SMOKING_AGE = 18
   INVENTORY_LOG = 'inventory.log'
 
   def log_sale
@@ -69,21 +77,21 @@ class Item
 
   class Beer < Item
     def restrictions
-      super + [Restriction::Age.new(DRINKING_AGE)]
+      super + [Restriction::DrinkingAge.new]
     end
   end
 
   class Whiskey < Item
     def restrictions
       # you can't sell hard liquor on Sundays for some reason
-      super + [Restriction::Age.new(DRINKING_AGE), Restriction::SundayBlueLaw.new]
+      super + [Restriction::DrinkingAge.new(DRINKING_AGE), Restriction::SundayBlueLaw.new]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
     def restrictions
-      super << Restriction::Age.new(SMOKING_AGE)
+      super << Restriction::SmokingAge.new
     end
   end
 
