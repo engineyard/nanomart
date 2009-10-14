@@ -77,21 +77,21 @@ class Item
 
   class Beer < Item
     def restrictions
-      super + [Restriction::DrinkingAge.new]
+      [Restriction::DrinkingAge.new]
     end
   end
 
   class Whiskey < Item
     def restrictions
       # you can't sell hard liquor on Sundays for some reason
-      super + [Restriction::DrinkingAge.new(DRINKING_AGE), Restriction::SundayBlueLaw.new]
+      [Restriction::DrinkingAge.new(DRINKING_AGE), Restriction::SundayBlueLaw.new]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
     def restrictions
-      super << Restriction::SmokingAge.new
+      [Restriction::SmokingAge.new]
     end
   end
 
