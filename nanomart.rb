@@ -68,7 +68,11 @@ class Item
   end
 
   def nam
-    self.class.to_s.sub(/^Item::/, '').downcase.to_sym
+    class_string = self.class.to_s
+    short_class_string = class_string.sub(/^Item::/, '')
+    lower_class_string = short_class_string.downcase
+    class_sym = lower_class_string.to_sym
+    class_sym
   end
 
   class Beer < Item
