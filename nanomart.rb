@@ -4,7 +4,20 @@ require 'highline'
 class NoSale < StandardError; end
 
 def process_transaction_for(item_type)
-  item = Item.for(item_type) or raise ArgumentError, "Don't know how to sell #{item_type}"
+  item = case item_type
+         when :beer
+           Item::Beer.new
+         when :whiskey
+           Item::Whiskey.new
+         when :cigarettes
+           Item::Cigarettes.new
+         when :cola
+           Item::Cola.new
+         when :canned_haggis
+           Item::CannedHaggis.new
+         else
+           raise ArgumentError, "Don't know how to sell #{item_type}"
+         end
 
   item.restrictions.each do |r|
     r.check or raise NoSale
@@ -59,20 +72,7 @@ class Item
   end
 
   def name
-    self.class.name
-  end
-
-  def self.name
-    self.to_s.sub(/^Item::/, '').downcase.to_sym
-  end
-
-  def self.inherited(klass)
-    @@item_type_for ||= {}
-    @@item_type_for[klass.name] = klass
-  end
-
-  def self.for(type)
-    @@item_type_for[type].new
+    self.class.to_s.sub(/^Item::/, '').downcase.to_sym
   end
 
   class Beer < Item
@@ -99,8 +99,9 @@ class Item
 
   class CannedHaggis < Item
     # the common-case implementation of Item.name doesn't work here
-    def self.name
+    def name
       :canned_haggis
     end
   end
 end
+
