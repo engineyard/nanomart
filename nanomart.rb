@@ -3,8 +3,8 @@ require 'highline'
 
 class NoSale < StandardError; end
 
-def process_transaction_for(item_type)
-  item = case item_type
+def process_transaction_for(itm_type)
+  itm = case itm_type
          when :beer
            Item::Beer.new
          when :whiskey
@@ -16,13 +16,13 @@ def process_transaction_for(item_type)
          when :canned_haggis
            Item::CannedHaggis.new
          else
-           raise ArgumentError, "Don't know how to sell #{item_type}"
+           raise ArgumentError, "Don't know how to sell #{itm_type}"
          end
 
-  item.restrictions.each do |r|
-    r.check or raise NoSale
+  itm.rstrctns.each do |r|
+    r.ck or raise NoSale
   end
-  item.log_sale
+  itm.log_sale
 end
 
 module Restriction
@@ -30,7 +30,7 @@ module Restriction
   SMOKING_AGE = 18
 
   class DrinkingAge
-    def check
+    def ck
       age = HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
       if age >= DRINKING_AGE
         true
@@ -41,7 +41,7 @@ module Restriction
   end
 
   class SmokingAge
-    def check
+    def ck
       age = HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
       if age >= SMOKING_AGE
         true
@@ -52,7 +52,7 @@ module Restriction
   end
 
   class SundayBlueLaw
-    def check
+    def ck
       Time.now.wday != 0      # 0 is Sunday
     end
   end
@@ -63,47 +63,47 @@ class Item
 
   def log_sale
     File.open(INVENTORY_LOG, 'a') do |f|
-      f.write(name.to_s + "\n")
+      f.write(nam.to_s + "\n")
     end
   end
 
-  def name
+  def nam
     self.class.to_s.sub(/^Item::/, '').downcase.to_sym
   end
 
   class Beer < Item
-    def restrictions
+    def rstrctns
       [Restriction::DrinkingAge.new]
     end
   end
 
   class Whiskey < Item
-    def restrictions
-      # you can't sell hard liquor on Sundays for some reason
-      [Restriction::DrinkingAge.new(DRINKING_AGE), Restriction::SundayBlueLaw.new]
+    # you can't sell hard liquor on Sundays for some reason
+    def rstrctns
+      [Restriction::DrinkingAge.new, Restriction::SundayBlueLaw.new]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
-    def restrictions
+    def rstrctns
       [Restriction::SmokingAge.new]
     end
   end
 
   class Cola < Item
-    def restrictions
+    def rstrctns
       []
     end
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.name doesn't work here
-    def name
+    # the common-case implementation of Item.nam doesn't work here
+    def nam
       :canned_haggis
     end
 
-    def restrictions
+    def rstrctns
       []
     end
   end
