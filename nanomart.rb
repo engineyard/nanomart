@@ -67,22 +67,16 @@ class Item
     @@item_type_for[type].new
   end
 
-  module Alcohol
-    # you have to be of a certain age to buy alcohol
+  class Beer < Item
     def restrictions
       super + [Restriction::Age.new(DRINKING_AGE)]
     end
   end
 
-  class Beer < Item
-    include Alcohol
-  end
-
   class Whiskey < Item
-    include Alcohol
     def restrictions
       # you can't sell hard liquor on Sundays for some reason
-      super << Restriction::SundayBlueLaw.new
+      super + [Restriction::Age.new(DRINKING_AGE), Restriction::SundayBlueLaw.new]
     end
   end
 
