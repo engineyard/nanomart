@@ -1,6 +1,7 @@
 require 'spec'
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'nanomart'
+require 'tempfile'
 
 
 class Age9 < HighlinePrompter
@@ -18,7 +19,8 @@ end
 describe "making sure the customer is old enough" do
   context "when you're a kid" do
     before(:each) do
-      @nanomart = Nanomart.new('/dev/null', Age9.new)
+      @log_path = Tempfile.new("test").path
+      @nanomart = Nanomart.new(@log_path, Age9.new)
     end
 
     it "lets you buy cola and canned haggis" do
@@ -31,11 +33,33 @@ describe "making sure the customer is old enough" do
       lambda { @nanomart.sell_me(:whiskey)    }.should raise_error(Nanomart::NoSale)
       lambda { @nanomart.sell_me(:cigarettes) }.should raise_error(Nanomart::NoSale)
     end
+    
+    context "when you buy cola" do
+      before(:each) do
+        lambda { @nanomart.sell_me(:cola)          }.should_not raise_error        
+      end
+      
+      it "should log the sale" do
+        written = File.read(@log_path)
+        written.should == "cola\n"
+      end
+    end
+    context "when you buy beer" do
+      before(:each) do
+        lambda { @nanomart.sell_me(:beer)          }.should raise_error        
+      end
+      
+      it "should log unauthorized sale attempt" do
+        written = File.read(@log_path)
+        written.should == "WARNING: a 9 year old attempted to buy beer\n"
+      end
+    end
   end
 
   context "when you're a newly-minted adult" do
     before(:each) do
-      @nanomart = Nanomart.new('/dev/null', Age19.new)
+      @log_path = Tempfile.new("test").path
+      @nanomart = Nanomart.new(@log_path, Age19.new)
     end
 
     it "lets you buy cola, canned haggis, and cigarettes (to hide the taste of the haggis)" do
@@ -47,6 +71,17 @@ describe "making sure the customer is old enough" do
     it "stops you from buying anything age-restricted" do
       lambda { @nanomart.sell_me(:beer)       }.should raise_error(Nanomart::NoSale)
       lambda { @nanomart.sell_me(:whiskey)    }.should raise_error(Nanomart::NoSale)
+    end
+
+    context "when you buy beer" do
+      before(:each) do
+        lambda { @nanomart.sell_me(:beer)          }.should raise_error        
+      end
+      
+      it "should log unauthorized sale attempt" do
+        written = File.read(@log_path)
+        written.should == "WARNING: a 19 year old attempted to buy beer\n"
+      end
     end
   end
 

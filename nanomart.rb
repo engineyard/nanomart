@@ -1,12 +1,21 @@
 # you can buy just a few things at this nanomart
 require 'highline'
 
+class Logger
+  def initialize(logfile)
+    @logfile = logfile
+  end
+  def log(text)
+    File.open(@logfile, 'a') { |f| f.write("#{text}\n") }    
+  end
+end
 
 class Nanomart
   class NoSale < StandardError; end
 
   def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
+    @prompter = prompter
+    @logger = Logger.new(logfile)
   end
 
   def sell_me(item_type)
@@ -24,11 +33,16 @@ class Nanomart
           else
             raise ArgumentError, "Don't know how to sell #{item_type}"
           end
-    item = item_class.new(@logfile)
+    item = item_class.new
     item.restrictions.each do |r|
-      r.check(@prompter) or raise NoSale
+      begin
+        r.new(@prompter, item).check!
+      rescue NoSale => e
+        @logger.log("WARNING: "+e.message)
+        raise e
+      end
     end
-    item.log_sale
+    @logger.log(item.name.to_s)
   end
 end
 
@@ -43,31 +57,45 @@ module Restriction
   DRINKING_AGE = 21
   SMOKING_AGE = 18
   
-  class DrinkingAge
-    def self.check(prompter)
-      prompter.get_age >= DRINKING_AGE
+  class GenericRestriction
+    def initialize(prompter, item)
+      @prompter = prompter
+      @item = item
+    end
+  end
+  
+  class AgeRestriction < GenericRestriction
+    def check!
+      age = @prompter.get_age
+      unless age >= self.age_restriction
+        raise Nanomart::NoSale.new("a #{age} year old attempted to buy #{@item.name}")
+      end
+    end
+  end
+  
+  class DrinkingAge < AgeRestriction
+    def age_restriction
+      DRINKING_AGE
+    end    
+  end
+
+  class SmokingAge < AgeRestriction
+    def age_restriction
+      SMOKING_AGE
     end
   end
 
-  class SmokingAge
-    def self.check(prompter)
-      prompter.get_age >= SMOKING_AGE
-    end
-  end
-
-  class SundayBlueLaw
-    def self.check(prompter)
-      Time.now.wday != 0      # 0 is Sunday
+  class SundayBlueLaw < GenericRestriction
+    def check!
+      if Time.now.wday == 0 # 0 is Sunday
+        raise Nanomart::NoSale.new("attempt to buy #{@item.name} on a Sunday")
+      end        
     end
   end
 end
 
 class Item
   INVENTORY_LOG = 'inventory.log'
-
-  def initialize(logfile)
-    @logfile = logfile
-  end
   
   def self.inherited(base)
     base.class_eval do
@@ -75,12 +103,6 @@ class Item
         attr_accessor :restrictions
       end
       self.restrictions ||= []
-    end
-  end
-
-  def log_sale
-    File.open(@logfile, 'a') do |f|
-      f.write(name.to_s + "\n")
     end
   end
 
