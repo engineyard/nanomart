@@ -92,6 +92,15 @@ class Item
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
   end
+  
+  def self.inherited(base)
+    base.class_eval do
+      class << self
+        attr_accessor :restrictions
+      end
+      self.restrictions ||= []
+    end
+  end
 
   def log_sale
     File.open(@logfile, 'a') do |f|
@@ -100,37 +109,33 @@ class Item
   end
 
   def name
-    class_string = self.class.to_s
-    short_class_string = class_string.sub(/^Item::/, '')
-    lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
+    self.class.to_s.sub(/^Item::/, '').downcase.to_sym
+  end
+  
+  def restrictions
+    self.class.restrictions.collect{ |r| r.new(@prompter) }
+  end
+  
+  def self.restriction(r)
+    self.restrictions << r
   end
 
   class Beer < Item
-    def restrictions
-      [Restriction::DrinkingAge.new(@prompter)]
-    end
+    restriction Restriction::DrinkingAge
   end
 
   class Whiskey < Item
+    restriction Restriction::DrinkingAge
     # you can't sell hard liquor on Sundays for some reason
-    def restrictions
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
-    end
+    restriction Restriction::SundayBlueLaw
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
-    def restrictions
-      [Restriction::SmokingAge.new(@prompter)]
-    end
+    restriction Restriction::SmokingAge
   end
 
   class Cola < Item
-    def restrictions
-      []
-    end
   end
 
   class CannedHaggis < Item
@@ -138,12 +143,10 @@ class Item
     def name
       :canned_haggis
     end
-
-    def restrictions
-      []
-    end
   end
 end
+
+
 
 if __FILE__ == $0
   nanomart = Nanomart.new('/dev/null', HighlinePrompter.new)
