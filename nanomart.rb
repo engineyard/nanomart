@@ -10,21 +10,21 @@ class Nanomart
   end
 
   def sell_me(item_type)
-    item = case item_type
+    item_class = case item_type
           when :beer
-            Item::Beer.new(@logfile, @prompter)
+            Item::Beer
           when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
+            Item::Whiskey
           when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
+            Item::Cigarettes
           when :cola
-            Item::Cola.new(@logfile, @prompter)
+            Item::Cola
           when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
+            Item::CannedHaggis
           else
             raise ArgumentError, "Don't know how to sell #{item_type}"
           end
-
+    item = item_class.new(@logfile, @prompter)
     item.restrictions.each do |r|
       r.check or raise NoSale
     end
