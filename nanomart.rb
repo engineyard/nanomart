@@ -24,9 +24,9 @@ class Nanomart
           else
             raise ArgumentError, "Don't know how to sell #{item_type}"
           end
-    item = item_class.new(@logfile, @prompter)
+    item = item_class.new(@logfile)
     item.restrictions.each do |r|
-      r.check or raise NoSale
+      r.check(@prompter) or raise NoSale
     end
     item.log_sale
   end
@@ -43,26 +43,20 @@ module Restriction
   DRINKING_AGE = 21
   SMOKING_AGE = 18
   
-  class GenericRestriction
-    def initialize(p)
-      @prompter = p
+  class DrinkingAge
+    def self.check(prompter)
+      prompter.get_age >= DRINKING_AGE
     end
   end
 
-  class DrinkingAge < GenericRestriction
-    def check
-      @prompter.get_age >= DRINKING_AGE
+  class SmokingAge
+    def self.check(prompter)
+      prompter.get_age >= SMOKING_AGE
     end
   end
 
-  class SmokingAge < GenericRestriction
-    def check
-      @prompter.get_age >= SMOKING_AGE
-    end
-  end
-
-  class SundayBlueLaw < GenericRestriction
-    def check
+  class SundayBlueLaw
+    def self.check(prompter)
       Time.now.wday != 0      # 0 is Sunday
     end
   end
@@ -71,8 +65,8 @@ end
 class Item
   INVENTORY_LOG = 'inventory.log'
 
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
+  def initialize(logfile)
+    @logfile = logfile
   end
   
   def self.inherited(base)
@@ -95,7 +89,7 @@ class Item
   end
   
   def restrictions
-    self.class.restrictions.collect{ |r| r.new(@prompter) }
+    self.class.restrictions
   end
   
   def self.restriction(r)
