@@ -3,15 +3,15 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'nanomart'
 
 
-class Age9
+class Age9 < HighlinePrompter
   def get_age() 9 end
 end
 
-class Age19
+class Age19 < HighlinePrompter
   def get_age() 19 end
 end
 
-class Age99
+class Age99 < HighlinePrompter
   def get_age() 99 end
 end
 
