@@ -26,7 +26,7 @@ class Nanomart
           end
 
     itm.rstrctns.each do |r|
-      r.ck or raise NoSale
+      itm.try_purchase(r.ck)
     end
     itm.log_sale
   end
@@ -105,6 +105,14 @@ class Item
     lower_class_string = short_class_string.downcase
     class_sym = lower_class_string.to_sym
     class_sym
+  end
+
+  def try_purchase(success)
+    if success
+      return true
+    else
+      raise Nanomart::NoSale
+    end
   end
 
   class Beer < Item
