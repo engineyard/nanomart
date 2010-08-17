@@ -1,0 +1,3 @@
+require 'nanomart'
+
+main

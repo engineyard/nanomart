@@ -5,11 +5,15 @@ require 'highline'
 class Nanomart
   class NoSale < StandardError; end
 
+  PRODUCTS = [:cola, :canned_haggis, :cigarettes, :beer, :whiskey]
+
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
   end
 
   def sell_me(itm_type)
+    args = [@logfile, @prompter]
+
     itm = case itm_type
           when :beer
             Item::Beer.new(@logfile, @prompter)
@@ -26,7 +30,7 @@ class Nanomart
           end
 
     itm.rstrctns.each do |r|
-      r.ck or raise NoSale
+      r.can_buy? or raise NoSale
     end
     itm.log_sale
   end
@@ -34,7 +38,21 @@ end
 
 class HighlinePrompter
   def get_age
-    HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
+    @age ||= HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
+  end
+
+  def get_product
+    @hl = HighLine.new
+
+    @hl.choose do |menu|
+      menu.prompt = "What do you want?  "
+
+      Nanomart::PRODUCTS.each do |product|
+        menu.choice(product) { return product }
+      end
+
+      menu.choice('Nothing.  Bye.') { exit }
+    end
   end
 end
 
@@ -48,7 +66,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def can_buy?
       age = @prompter.get_age
       if age >= DRINKING_AGE
         true
@@ -63,7 +81,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def can_buy?
       age = @prompter.get_age
       if age >= SMOKING_AGE
         true
@@ -78,7 +96,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def can_buy?
       # pp Time.now.wday
       # debugger
       Time.now.wday != 0      # 0 is Sunday
@@ -95,11 +113,11 @@ class Item
 
   def log_sale
     File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+      f.write(symbolize.to_s + "\n")
     end
   end
 
-  def nam
+  def symbolize
     class_string = self.class.to_s
     short_class_string = class_string.sub(/^Item::/, '')
     lower_class_string = short_class_string.downcase
@@ -134,8 +152,8 @@ class Item
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
+    # the common-case implementation of Item.symbolize doesn't work here
+    def symbolize
       :canned_haggis
     end
 
@@ -145,3 +163,19 @@ class Item
   end
 end
 
+
+
+def main
+  @prompter = HighlinePrompter.new
+  @nanomart = Nanomart.new('log.txt', @prompter)
+  @age = @prompter.get_age
+  loop do
+    begin
+      @product = @prompter.get_product
+      @nanomart.sell_me(@product)
+      puts 'Gotcha.'
+    rescue Nanomart::NoSale
+      puts 'NO!'
+    end
+  end
+end
