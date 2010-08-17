@@ -5,30 +5,18 @@ require 'highline'
 class Nanomart
   class NoSale < StandardError; end
 
-  PRODUCTS = [:cola, :canned_haggis, :cigarettes, :beer, :whiskey]
-
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
   end
 
   def sell_me(itm_type)
-    args = [@logfile, @prompter]
+    klass = Item.registry[itm_type]
 
-    itm = case itm_type
-          when :beer
-            Item::Beer.new(@logfile, @prompter)
-          when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
-          when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
-          when :cola
-            Item::Cola.new(@logfile, @prompter)
-          when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
-          else
-            raise ArgumentError, "Don't know how to sell #{itm_type}"
-          end
-
+    itm = if klass
+      klass.new(@logfile, @prompter)
+    else
+      raise ArgumentError, "Don't know how to sell #{itm_type}"
+    end
     itm.rstrctns.each do |r|
       r.can_buy? or raise NoSale
     end
@@ -47,7 +35,7 @@ class HighlinePrompter
     @hl.choose do |menu|
       menu.prompt = "What do you want?  "
 
-      Nanomart::PRODUCTS.each do |product|
+      Item.registry.each_key do |product|
         menu.choice(product) { return product }
       end
 
@@ -107,8 +95,16 @@ end
 class Item
   INVENTORY_LOG = 'inventory.log'
 
+  def self.registry
+    @item_registry ||= {}
+  end
+
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
+  end
+
+  def self.register_as(sym)
+    Item.registry[sym] = self
   end
 
   def log_sale
@@ -118,20 +114,22 @@ class Item
   end
 
   def symbolize
-    class_string = self.class.to_s
-    short_class_string = class_string.sub(/^Item::/, '')
-    lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
+    Item.registry.each do |name,klass|
+      return name if klass == self.class
+    end
   end
 
   class Beer < Item
+    register_as :beer
+
     def rstrctns
       [Restriction::DrinkingAge.new(@prompter)]
     end
   end
 
   class Whiskey < Item
+    register_as :whiskey
+
     # you can't sell hard liquor on Sundays for some reason
     def rstrctns
       [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
@@ -139,6 +137,8 @@ class Item
   end
 
   class Cigarettes < Item
+    register_as :cigarettes
+
     # you have to be of a certain age to buy tobacco
     def rstrctns
       [Restriction::SmokingAge.new(@prompter)]
@@ -146,16 +146,15 @@ class Item
   end
 
   class Cola < Item
+    register_as :cola
+
     def rstrctns
       []
     end
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.symbolize doesn't work here
-    def symbolize
-      :canned_haggis
-    end
+    register_as :canned_haggis
 
     def rstrctns
       []
