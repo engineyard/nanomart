@@ -1,1 +1,6 @@
-This code is terrible.  Clean it up.
+This code is terrible. 
+
+Clean it up.
+
+Run the tests with @bundle exec spec nanomart_spec.rb@
+
