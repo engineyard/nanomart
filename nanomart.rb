@@ -1,155 +1,99 @@
 # you can buy just a few things at this nanomart
 require 'highline'
 
-
 class Nanomart
-  class NoSale < StandardError; end
-
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
   end
 
-  def sell_me(itm_type)
-    itm = case itm_type
-          when :beer
-            Item::Beer.new(@logfile, @prompter)
-          when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
-          when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
-          when :cola
-            Item::Cola.new(@logfile, @prompter)
-          when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
-          else
-            raise ArgumentError, "Don't know how to sell #{itm_type}"
-          end
-
-    itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
-    end
-    itm.log_sale
+  def sell_me(item_class)
+    item_class.new(@logfile, @prompter).purchase!
   end
 end
 
 class HighlinePrompter
-  def get_age
+  def age
     HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
   end
 end
 
+class Restriction
+  def initialize(prompter)
+    @prompter = prompter
+  end
 
-module Restriction
-  DRINKING_AGE = 21
-  SMOKING_AGE = 18
-
-  class DrinkingAge
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
-      age = @prompter.get_age
-      if age >= DRINKING_AGE
-        true
-      else
-        false
-      end
+  class DrinkingAge < Restriction
+    def ok?
+      @prompter.age >= 21
     end
   end
 
-  class SmokingAge
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
-      age = @prompter.get_age
-      if age >= SMOKING_AGE
-        true
-      else
-        false
-      end
+  class SmokingAge < Restriction
+    def ok?
+      @prompter.age >= 18
     end
   end
 
-  class SundayBlueLaw
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
-      # pp Time.now.wday
-      # debugger
-      Time.now.wday != 0      # 0 is Sunday
+  class SundayBlueLaw < Restriction
+    def ok?
+      sunday = 0
+      Time.now.wday != sunday
     end
   end
 end
 
 class Item
+  class NoSale < StandardError; end
   INVENTORY_LOG = 'inventory.log'
 
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
   end
 
+  def restrictions
+    []
+  end
+
   def log_sale
     File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+      f.write(name + "\n")
     end
   end
 
-  def nam
-    class_string = self.class.to_s
-    short_class_string = class_string.sub(/^Item::/, '')
-    lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
+  def name
+    self.class.to_s.downcase
   end
 
-  def try_purchase(success)
-    if success
-      return true
-    else
-      raise Nanomart::NoSale
+  def purchase!
+    restrictions.each do |restriction|
+      raise Item::NoSale unless restriction.ok?
     end
+    log_sale
   end
+end
 
-  class Beer < Item
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter)]
-    end
+class Beer < Item
+  def restrictions
+    [Restriction::DrinkingAge.new(@prompter)]
   end
+end
 
-  class Whiskey < Item
-    # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
-    end
+class Whiskey < Item
+  def restrictions
+    [Restriction::DrinkingAge.new(@prompter), 
+     Restriction::SundayBlueLaw.new(@prompter)]
   end
+end
 
-  class Cigarettes < Item
-    # you have to be of a certain age to buy tobacco
-    def rstrctns
-      [Restriction::SmokingAge.new(@prompter)]
-    end
+class Cigarettes < Item
+  def restrictions
+    [Restriction::SmokingAge.new(@prompter)]
   end
+end
 
-  class Cola < Item
-    def rstrctns
-      []
-    end
-  end
+class Cola < Item
+end
 
-  class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
-      :canned_haggis
-    end
-
-    def rstrctns
-      []
-    end
-  end
+class CannedHaggis < Item
 end
 
