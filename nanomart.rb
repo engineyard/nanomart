@@ -22,10 +22,12 @@ class Nanomart
       raise ArgumentError, "Don't know how to sell #{item_type}"
     end
 
-    itm.try_purchase(@person)
+    if itm.try_purchase(@person)
+      @person.take_item(itm)
 
-    File.open(@logfile, 'a') do |f|
-      f.write(itm.name.to_s + "\n")
+      File.open(@logfile, 'a') do |f|
+        f.write(itm.name.to_s + "\n")
+      end
     end
   end
 end
@@ -71,7 +73,7 @@ class Item
   def try_purchase(person)
     @restrictions.each do |r|
       unless r.check(person)
-        raise Nanomart::NoSale
+        return false
       end
     end
     true
