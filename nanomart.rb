@@ -11,7 +11,7 @@ class Nanomart
   end
 
   def run
-    while item_type = @person.next_item
+    while item_type = @person.next_item(item_names)
       sell_me(item_type)
     end
   end
@@ -38,6 +38,12 @@ class Nanomart
     end
   end
 
+  def item_names
+    items.map do |item|
+      item.name
+    end
+  end
+
   def items
     [
       Item.new(:beer,          [Restriction::DrinkingAge.new]),
@@ -57,8 +63,15 @@ class Person
     @age ||= HighLine.new.ask('Age? ', Integer)
   end
 
-  def next_item
-    HighLine.new.ask('Item? ', String).to_sym
+  def next_item(names)
+    HighLine.new.choose do |c|
+      c.prompt = 'Item? '
+
+      names.each do |name|
+        c.choice(name) { return name }
+      end
+      c.choice("Leave the mart") { exit }
+    end
   end
 
   def take_item(name)

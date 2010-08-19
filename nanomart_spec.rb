@@ -17,7 +17,7 @@ class MockPerson
     @age
   end
 
-  def next_item
+  def next_item(names)
     @requested_items.shift
   end
 
