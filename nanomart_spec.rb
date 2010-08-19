@@ -5,11 +5,12 @@ require 'nanomart'
 
 class MockPerson
   def initialize(age)
-    @age           = age
-    @items         = []
-    @unknown_items = []
+    @age              = age
+    @items            = []
+    @disallowed_items = []
+    @unknown_items    = []
   end
-  attr_reader :items, :unknown_items
+  attr_reader :items, :disallowed_items, :unknown_items
 
   def get_age
     @age
@@ -17,6 +18,10 @@ class MockPerson
 
   def take_item(name)
     @items << name
+  end
+
+  def disallowed_item(name)
+    @disallowed_items << name
   end
 
   def unknown_item(name)
@@ -56,12 +61,16 @@ describe "making sure the customer is old enough" do
       @nanomart.sell_me(:canned_haggis)
       @nanomart.sell_me(:cigarettes)
       @person.should have(3).items
+      @person.should have(0).disallowed_items
+      @person.should have(0).unknown_items
     end
 
     it "stops you from buying anything age-restricted" do
       @nanomart.sell_me(:beer)
       @nanomart.sell_me(:whiskey)
       @person.should have(0).items
+      @person.should have(2).disallowed_items
+      @person.should have(0).unknown_items
     end
   end
 
@@ -79,6 +88,8 @@ describe "making sure the customer is old enough" do
       @nanomart.sell_me(:beer)
       @nanomart.sell_me(:whiskey)
       @person.should have(5).items
+      @person.should have(0).disallowed_items
+      @person.should have(0).unknown_items
     end
   end
 
@@ -92,6 +103,8 @@ describe "making sure the customer is old enough" do
     it "stops you from buying hard alcohol" do
       @nanomart.sell_me(:whiskey)
       @person.should have(0).items
+      @person.should have(1).disallowed_items
+      @person.should have(0).unknown_items
     end
   end
 
@@ -104,6 +117,8 @@ describe "making sure the customer is old enough" do
     it "warns you that the item does not exist" do
       @nanomart.sell_me(:unicorns)
       @nanomart.sell_me(:ponies)
+      @person.should have(0).items
+      @person.should have(0).disallowed_items
       @person.should have(2).unknown_items
     end
   end

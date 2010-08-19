@@ -20,11 +20,13 @@ class Nanomart
   def sell_me(item_type)
     if itm = item_named(item_type)
       if itm.try_purchase(@person)
-        @person.take_item(itm)
+        @person.take_item(item_type)
 
         File.open(@logfile, 'a') do |f|
           f.write(itm.name.to_s + "\n")
         end
+      else
+        @person.disallowed_item(item_type)
       end
     else
       @person.unknown_item(item_type)
