@@ -53,12 +53,24 @@ end
 
 class Person
   # prompts for user's age, reads it in
-  def age
+  def get_age
     @age ||= HighLine.new.ask('Age? ', Integer)
   end
 
   def next_item
-    HighLine.new.ask('Item? ', String)
+    HighLine.new.ask('Item? ', String).to_sym
+  end
+
+  def take_item(name)
+    puts "Here you go, have some #{name}"
+  end
+
+  def disallowed_item(name)
+    puts "Sorry! You are not allowed #{name}"
+  end
+
+  def unknown_item(name)
+    puts "I don't have any #{name} in stock"
   end
 end
 
