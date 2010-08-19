@@ -1,5 +1,6 @@
 source 'http://rubygems.org/'
 
+gem 'nanomart', :path => '.'
 gem 'highline'
 
 group :test do
