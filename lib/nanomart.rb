@@ -116,11 +116,8 @@ class Item
   attr_reader :name
 
   def try_purchase(person)
-    @restrictions.each do |r|
-      unless r.check(person)
-        return false
-      end
+    @restrictions.all? do |r|
+      r.check(person)
     end
-    true
   end
 end
