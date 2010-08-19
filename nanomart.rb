@@ -2,19 +2,18 @@
 Bundler.require
 
 class Nanomart
-  def self.run(logfile)
-    new(logfile, Person.new).run
+  def self.run(logfile, person = Person.new)
+    new(logfile, person).run
   end
-
-  class NoSale < StandardError; end
 
   def initialize(logfile, person)
     @logfile, @person = logfile, person
   end
 
   def run
-    item_type = @person.get_item
-    sell_me(item_type.to_sym)
+    while item_type = @person.next_item
+      sell_me(item_type)
+    end
   end
 
   def sell_me(item_type)
@@ -53,11 +52,12 @@ class Nanomart
 end
 
 class Person
-  def get_age
-    HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
+  # prompts for user's age, reads it in
+  def age
+    @age ||= HighLine.new.ask('Age? ', Integer)
   end
 
-  def get_item
+  def next_item
     HighLine.new.ask('Item? ', String)
   end
 end

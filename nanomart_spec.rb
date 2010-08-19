@@ -4,8 +4,9 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'nanomart'
 
 class MockPerson
-  def initialize(age)
+  def initialize(age, requested_items = [])
     @age              = age
+    @requested_items  = requested_items
     @items            = []
     @disallowed_items = []
     @unknown_items    = []
@@ -14,6 +15,10 @@ class MockPerson
 
   def get_age
     @age
+  end
+
+  def next_item
+    @requested_items.shift
   end
 
   def take_item(name)
@@ -26,6 +31,16 @@ class MockPerson
 
   def unknown_item(name)
     @unknown_items << name
+  end
+end
+
+describe "buying multiple items" do
+  it "asks the person until they have no more items they want" do
+    person = MockPerson.new(19, [:beer, :unicorns, :cola, :whiskey, :canned_haggis])
+    Nanomart.run('/dev/null', person)
+    person.items.should == [:cola, :canned_haggis]
+    person.disallowed_items.should == [:beer, :whiskey]
+    person.unknown_items.should == [:unicorns]
   end
 end
 
