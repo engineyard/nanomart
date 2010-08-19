@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'bundler'
+Bundler.setup
+require 'nanomart'
+
+puts "Now entering Nanomart"
+Nanomart.run("tmp/log")

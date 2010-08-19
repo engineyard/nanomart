@@ -2,10 +2,19 @@
 Bundler.require
 
 class Nanomart
+  def self.run(logfile)
+    new(logfile, HighlinePrompter.new).run
+  end
+
   class NoSale < StandardError; end
 
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
+  end
+
+  def run
+    itm_type = @prompter.get_item
+    sell_me(itm_type.to_sym)
   end
 
   def sell_me(itm_type)
@@ -34,6 +43,10 @@ end
 class HighlinePrompter
   def get_age
     HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
+  end
+
+  def get_item
+    HighLine.new.ask('Item? ', String)
   end
 end
 
