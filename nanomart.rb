@@ -33,9 +33,7 @@ class Nanomart
             raise ArgumentError, "Don't know how to sell #{item_type}"
           end
 
-    itm.restrictions.each do |r|
-      itm.try_purchase(r.check)
-    end
+    itm.try_purchase
     itm.log_sale
   end
 end
@@ -97,8 +95,6 @@ module Restriction
 end
 
 class Item
-  INVENTORY_LOG = 'inventory.log'
-
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
   end
@@ -117,12 +113,13 @@ class Item
     class_sym
   end
 
-  def try_purchase(success)
-    if success
-      return true
-    else
-      raise Nanomart::NoSale
+  def try_purchase
+    restrictions.each do |r|
+      unless r.check
+        raise Nanomart::NoSale
+      end
     end
+    true
   end
 
   class Beer < Item
