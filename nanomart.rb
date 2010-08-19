@@ -34,7 +34,10 @@ class Nanomart
           end
 
     itm.try_purchase(@person)
-    itm.log_sale
+
+    File.open(@logfile, 'a') do |f|
+      f.write(itm.nam.to_s + "\n")
+    end
   end
 end
 
@@ -70,16 +73,6 @@ module Restriction
 end
 
 class Item
-  def initialize(logfile)
-    @logfile = logfile
-  end
-
-  def log_sale
-    File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
-    end
-  end
-
   def nam
     class_string = self.class.to_s
     short_class_string = class_string.sub(/^Item::/, '')
