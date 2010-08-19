@@ -1,6 +1,5 @@
 # you can buy just a few things at this nanomart
-require 'highline'
-
+Bundler.require
 
 class Nanomart
   class NoSale < StandardError; end

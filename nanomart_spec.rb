@@ -1,7 +1,7 @@
-require 'spec'
+Bundler.require(:test)
+
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'nanomart'
-
 
 class Age9
   def get_age() 9 end
