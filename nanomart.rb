@@ -18,25 +18,14 @@ class Nanomart
   end
 
   def sell_me(item_type)
-    itm = case item_type
-          when :beer
-            Item::Beer.new(@logfile)
-          when :whiskey
-            Item::Whiskey.new(@logfile)
-          when :cigarettes
-            Item::Cigarettes.new(@logfile)
-          when :cola
-            Item::Cola.new(@logfile)
-          when :canned_haggis
-            Item::CannedHaggis.new(@logfile)
-          else
-            raise ArgumentError, "Don't know how to sell #{item_type}"
-          end
+    unless itm = Item.named(item_type)
+      raise ArgumentError, "Don't know how to sell #{item_type}"
+    end
 
     itm.try_purchase(@person)
 
     File.open(@logfile, 'a') do |f|
-      f.write(itm.nam.to_s + "\n")
+      f.write(itm.name.to_s + "\n")
     end
   end
 end
@@ -73,16 +62,14 @@ module Restriction
 end
 
 class Item
-  def nam
-    class_string = self.class.to_s
-    short_class_string = class_string.sub(/^Item::/, '')
-    lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
+  def initialize(name, restrictions)
+    @name         = name
+    @restrictions = restrictions
   end
+  attr_reader :name
 
   def try_purchase(person)
-    restrictions.each do |r|
+    @restrictions.each do |r|
       unless r.check(person)
         raise Nanomart::NoSale
       end
@@ -90,41 +77,19 @@ class Item
     true
   end
 
-  class Beer < Item
-    def restrictions
-      [Restriction::DrinkingAge.new]
+  def self.named(name)
+    AVAILABLE.find do |item|
+      item.name == name
     end
   end
 
-  class Whiskey < Item
+  AVAILABLE = [
+    Item.new(:beer,          [Restriction::DrinkingAge.new]),
     # you can't sell hard liquor on Sundays for some reason
-    def restrictions
-      [Restriction::DrinkingAge.new, Restriction::SundayBlueLaw.new]
-    end
-  end
-
-  class Cigarettes < Item
+    Item.new(:whiskey,       [Restriction::DrinkingAge.new, Restriction::SundayBlueLaw.new]),
     # you have to be of a certain age to buy tobacco
-    def restrictions
-      [Restriction::SmokingAge.new]
-    end
-  end
-
-  class Cola < Item
-    def restrictions
-      []
-    end
-  end
-
-  class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
-      :canned_haggis
-    end
-
-    def restrictions
-      []
-    end
-  end
+    Item.new(:cigarettes,    [Restriction::SmokingAge.new]),
+    Item.new(:cola,          []),
+    Item.new(:canned_haggis, [])
+  ]
 end
-
