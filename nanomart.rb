@@ -18,7 +18,7 @@ class Nanomart
   end
 
   def sell_me(item_type)
-    unless itm = Item.named(item_type)
+    unless itm = item_named(item_type)
       raise ArgumentError, "Don't know how to sell #{item_type}"
     end
 
@@ -29,6 +29,24 @@ class Nanomart
         f.write(itm.name.to_s + "\n")
       end
     end
+  end
+
+  def item_named(name)
+    items.find do |item|
+      item.name == name
+    end
+  end
+
+  def items
+    [
+      Item.new(:beer,          [Restriction::DrinkingAge.new]),
+      # you can't sell hard liquor on Sundays for some reason
+      Item.new(:whiskey,       [Restriction::DrinkingAge.new, Restriction::SundayBlueLaw.new]),
+      # you have to be of a certain age to buy tobacco
+      Item.new(:cigarettes,    [Restriction::SmokingAge.new]),
+      Item.new(:cola,          []),
+      Item.new(:canned_haggis, [])
+    ]
   end
 end
 
@@ -78,20 +96,4 @@ class Item
     end
     true
   end
-
-  def self.named(name)
-    AVAILABLE.find do |item|
-      item.name == name
-    end
-  end
-
-  AVAILABLE = [
-    Item.new(:beer,          [Restriction::DrinkingAge.new]),
-    # you can't sell hard liquor on Sundays for some reason
-    Item.new(:whiskey,       [Restriction::DrinkingAge.new, Restriction::SundayBlueLaw.new]),
-    # you have to be of a certain age to buy tobacco
-    Item.new(:cigarettes,    [Restriction::SmokingAge.new]),
-    Item.new(:cola,          []),
-    Item.new(:canned_haggis, [])
-  ]
 end
