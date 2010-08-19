@@ -89,5 +89,16 @@ describe "making sure the customer is old enough" do
       @person.should have(0).items
     end
   end
+
+  context "when buying an unknown item" do
+    before(:each) do
+      @person   = MockPerson.new(99)
+      @nanomart = Nanomart.new('/dev/null', @person)
+    end
+
+    it "warns you that the item does not exist" do
+      lambda { @nanomart.sell_me(:unicorns) }.should raise_error(ArgumentError)
+    end
+  end
 end
 
