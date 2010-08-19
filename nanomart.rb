@@ -34,7 +34,7 @@ class Nanomart
           end
 
     itm.restrictions.each do |r|
-      itm.try_purchase(r.ck)
+      itm.try_purchase(r.check)
     end
     itm.log_sale
   end
@@ -60,7 +60,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def check
       age = @prompter.get_age
       if age >= DRINKING_AGE
         true
@@ -75,7 +75,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def check
       age = @prompter.get_age
       if age >= SMOKING_AGE
         true
@@ -90,9 +90,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
-      # pp Time.now.wday
-      # debugger
+    def check
       Time.now.wday != 0      # 0 is Sunday
     end
   end
