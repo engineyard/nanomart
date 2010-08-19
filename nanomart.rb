@@ -13,12 +13,12 @@ class Nanomart
   end
 
   def run
-    itm_type = @prompter.get_item
-    sell_me(itm_type.to_sym)
+    item_type = @prompter.get_item
+    sell_me(item_type.to_sym)
   end
 
-  def sell_me(itm_type)
-    itm = case itm_type
+  def sell_me(item_type)
+    itm = case item_type
           when :beer
             Item::Beer.new(@logfile, @prompter)
           when :whiskey
@@ -30,7 +30,7 @@ class Nanomart
           when :canned_haggis
             Item::CannedHaggis.new(@logfile, @prompter)
           else
-            raise ArgumentError, "Don't know how to sell #{itm_type}"
+            raise ArgumentError, "Don't know how to sell #{item_type}"
           end
 
     itm.rstrctns.each do |r|
