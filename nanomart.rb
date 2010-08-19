@@ -18,16 +18,16 @@ class Nanomart
   end
 
   def sell_me(item_type)
-    unless itm = item_named(item_type)
-      raise ArgumentError, "Don't know how to sell #{item_type}"
-    end
+    if itm = item_named(item_type)
+      if itm.try_purchase(@person)
+        @person.take_item(itm)
 
-    if itm.try_purchase(@person)
-      @person.take_item(itm)
-
-      File.open(@logfile, 'a') do |f|
-        f.write(itm.name.to_s + "\n")
+        File.open(@logfile, 'a') do |f|
+          f.write(itm.name.to_s + "\n")
+        end
       end
+    else
+      @person.unknown_item(item_type)
     end
   end
 

@@ -5,10 +5,11 @@ require 'nanomart'
 
 class MockPerson
   def initialize(age)
-    @age = age
-    @items = []
+    @age           = age
+    @items         = []
+    @unknown_items = []
   end
-  attr_reader :items
+  attr_reader :items, :unknown_items
 
   def get_age
     @age
@@ -16,6 +17,10 @@ class MockPerson
 
   def take_item(name)
     @items << name
+  end
+
+  def unknown_item(name)
+    @unknown_items << name
   end
 end
 
@@ -97,7 +102,9 @@ describe "making sure the customer is old enough" do
     end
 
     it "warns you that the item does not exist" do
-      lambda { @nanomart.sell_me(:unicorns) }.should raise_error(ArgumentError)
+      @nanomart.sell_me(:unicorns)
+      @nanomart.sell_me(:ponies)
+      @person.should have(2).unknown_items
     end
   end
 end
