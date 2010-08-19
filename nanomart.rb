@@ -3,32 +3,32 @@ Bundler.require
 
 class Nanomart
   def self.run(logfile)
-    new(logfile, HighlinePrompter.new).run
+    new(logfile, Person.new).run
   end
 
   class NoSale < StandardError; end
 
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
+  def initialize(logfile, person)
+    @logfile, @person = logfile, person
   end
 
   def run
-    item_type = @prompter.get_item
+    item_type = @person.get_item
     sell_me(item_type.to_sym)
   end
 
   def sell_me(item_type)
     itm = case item_type
           when :beer
-            Item::Beer.new(@logfile, @prompter)
+            Item::Beer.new(@logfile, @person)
           when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
+            Item::Whiskey.new(@logfile, @person)
           when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
+            Item::Cigarettes.new(@logfile, @person)
           when :cola
-            Item::Cola.new(@logfile, @prompter)
+            Item::Cola.new(@logfile, @person)
           when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
+            Item::CannedHaggis.new(@logfile, @person)
           else
             raise ArgumentError, "Don't know how to sell #{item_type}"
           end
@@ -38,7 +38,7 @@ class Nanomart
   end
 end
 
-class HighlinePrompter
+class Person
   def get_age
     HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
   end
@@ -55,11 +55,11 @@ module Restriction
 
   class DrinkingAge
     def initialize(p)
-      @prompter = p
+      @person = p
     end
 
     def check
-      age = @prompter.get_age
+      age = @person.get_age
       if age >= DRINKING_AGE
         true
       else
@@ -70,11 +70,11 @@ module Restriction
 
   class SmokingAge
     def initialize(p)
-      @prompter = p
+      @person = p
     end
 
     def check
-      age = @prompter.get_age
+      age = @person.get_age
       if age >= SMOKING_AGE
         true
       else
@@ -85,7 +85,7 @@ module Restriction
 
   class SundayBlueLaw
     def initialize(p)
-      @prompter = p
+      @person = p
     end
 
     def check
@@ -95,8 +95,8 @@ module Restriction
 end
 
 class Item
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
+  def initialize(logfile, person)
+    @logfile, @person = logfile, person
   end
 
   def log_sale
@@ -124,21 +124,21 @@ class Item
 
   class Beer < Item
     def restrictions
-      [Restriction::DrinkingAge.new(@prompter)]
+      [Restriction::DrinkingAge.new(@person)]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
     def restrictions
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
+      [Restriction::DrinkingAge.new(@person), Restriction::SundayBlueLaw.new(@person)]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
     def restrictions
-      [Restriction::SmokingAge.new(@prompter)]
+      [Restriction::SmokingAge.new(@person)]
     end
   end
 
