@@ -49,14 +49,13 @@ class Person
 end
 
 
-module Restriction
-  DRINKING_AGE = 21
-  SMOKING_AGE = 18
+class Restriction
+  def initialize(p)
+    @person = p
+  end
 
-  class DrinkingAge
-    def initialize(p)
-      @person = p
-    end
+  class DrinkingAge < Restriction
+    DRINKING_AGE = 21
 
     def check
       age = @person.get_age
@@ -68,10 +67,8 @@ module Restriction
     end
   end
 
-  class SmokingAge
-    def initialize(p)
-      @person = p
-    end
+  class SmokingAge < Restriction
+    SMOKING_AGE = 18
 
     def check
       age = @person.get_age
@@ -83,11 +80,7 @@ module Restriction
     end
   end
 
-  class SundayBlueLaw
-    def initialize(p)
-      @person = p
-    end
-
+  class SundayBlueLaw < Restriction
     def check
       Time.now.wday != 0      # 0 is Sunday
     end
