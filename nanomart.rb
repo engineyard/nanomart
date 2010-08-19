@@ -55,28 +55,14 @@ class Restriction
   end
 
   class DrinkingAge < Restriction
-    DRINKING_AGE = 21
-
     def check
-      age = @person.get_age
-      if age >= DRINKING_AGE
-        true
-      else
-        false
-      end
+      @person.get_age >= 21
     end
   end
 
   class SmokingAge < Restriction
-    SMOKING_AGE = 18
-
     def check
-      age = @person.get_age
-      if age >= SMOKING_AGE
-        true
-      else
-        false
-      end
+      @person.get_age >= 18
     end
   end
 
