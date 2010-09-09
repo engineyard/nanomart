@@ -100,6 +100,10 @@ class Item
     end
     log_sale
   end
+  
+  def restrictions
+    []
+  end
 
   class Beer < Item
     def restrictions
@@ -122,19 +126,12 @@ class Item
   end
 
   class Cola < Item
-    def restrictions
-      []
-    end
   end
 
   class CannedHaggis < Item
     # the common-case implementation of Item.name doesn't work here
     def name
       :canned_haggis
-    end
-
-    def restrictions
-      []
     end
   end
 end
