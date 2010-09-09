@@ -59,7 +59,13 @@ module Restriction
 
   class SundayBlueLaw < Abstract
     def check
-      Time.now.wday != 0      # 0 is Sunday
+      is_sunday?
+    end
+    
+    private
+    
+    def is_sunday?
+      Time.now.wday != 0
     end
   end
 end
