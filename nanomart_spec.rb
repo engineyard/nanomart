@@ -31,6 +31,12 @@ describe "making sure the customer is old enough" do
       lambda { @nanomart.sell_me(:whiskey)    }.should raise_error(Nanomart::NoSale)
       lambda { @nanomart.sell_me(:cigarettes) }.should raise_error(Nanomart::NoSale)
     end
+    
+    context 'when a NoSale error is raised' do
+      it 'should display a helpful message' do
+        lambda { @nanomart.sell_me(:beer) }.should raise_error(Nanomart::NoSale, "You're not allowed to purchase this item.")
+      end
+    end
   end
 
   context "when you're a newly-minted adult" do
