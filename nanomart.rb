@@ -25,7 +25,7 @@ class Nanomart
             raise ArgumentError, "Don't know how to sell #{item_type}"
           end
 
-    item.attempt_purchase!
+    item.sell!
   end
 end
 
@@ -105,7 +105,7 @@ class Item
     class_sym
   end
   
-  def attempt_purchase!
+  def sell!
     restrictions.each do |restriction| 
       unless restriction.check
         raise Nanomart::NoSale, "You're not allowed to purchase this item."
