@@ -107,14 +107,10 @@ class Item
   end
   
   def attempt_purchase!
-    restrictions.each { |restriction| try_purchase(restriction.check) }
-  end
-
-  def try_purchase(success)
-    if success
-      return true
-    else
-      raise Nanomart::NoSale, "You're not allowed to purchase this item."
+    restrictions.each do |restriction| 
+      unless restriction.check
+        raise Nanomart::NoSale, "You're not allowed to purchase this item."
+      end
     end
   end
 
