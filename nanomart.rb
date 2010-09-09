@@ -39,12 +39,14 @@ end
 module Restriction
   DRINKING_AGE = 21
   SMOKING_AGE = 18
-
-  class DrinkingAge
+  
+  class Abstract
     def initialize(p)
       @prompter = p
     end
+  end
 
+  class DrinkingAge < Abstract
     def check
       age = @prompter.get_age
       if age >= DRINKING_AGE
@@ -55,11 +57,7 @@ module Restriction
     end
   end
 
-  class SmokingAge
-    def initialize(p)
-      @prompter = p
-    end
-
+  class SmokingAge < Abstract
     def check
       age = @prompter.get_age
       if age >= SMOKING_AGE
@@ -70,14 +68,8 @@ module Restriction
     end
   end
 
-  class SundayBlueLaw
-    def initialize(p)
-      @prompter = p
-    end
-
+  class SundayBlueLaw < Abstract
     def check
-      # pp Time.now.wday
-      # debugger
       Time.now.wday != 0      # 0 is Sunday
     end
   end
