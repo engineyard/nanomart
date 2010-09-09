@@ -26,8 +26,6 @@ class Nanomart
           end
 
     item.attempt_purchase!
-
-    item.log_sale
   end
 end
 
@@ -97,6 +95,7 @@ class Item
       f.write(nam.to_s + "\n")
     end
   end
+  private :log_sale
 
   def nam
     class_string = self.class.to_s
@@ -112,6 +111,7 @@ class Item
         raise Nanomart::NoSale, "You're not allowed to purchase this item."
       end
     end
+    log_sale
   end
 
   class Beer < Item

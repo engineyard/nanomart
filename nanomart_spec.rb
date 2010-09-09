@@ -81,5 +81,14 @@ describe "making sure the customer is old enough" do
       lambda { @nanomart.sell_me(:whiskey)       }.should raise_error(Nanomart::NoSale)
     end
   end
+  
+  context 'when a sale is successful' do
+    let(:nanomart) { Nanomart.new('/dev/null', Age99.new) }
+    
+    it "logs the sale" do
+      File.should_receive(:open).with('/dev/null', 'a')
+      nanomart.sell_me(:cola)
+    end
+  end
 end
 
