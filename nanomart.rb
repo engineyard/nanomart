@@ -33,19 +33,17 @@ class HighlinePrompter
   def get_age
     HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
   end
+  
+  def self.instance
+    @instance ||= new
+  end
 end
 
 
 module Restriction
-  class Abstract
-    def initialize(p)
-      @prompter = p
-    end
-  end
-  
-  class Age < Abstract
+  class Age
     def check
-      @prompter.get_age >= self.class.restricted_age
+      HighlinePrompter.instance.get_age >= self.class.restricted_age
     end
   end
 
@@ -57,7 +55,7 @@ module Restriction
     def self.restricted_age() 18 end
   end
 
-  class SundayBlueLaw < Abstract
+  class SundayBlueLaw
     def check
       is_sunday?
     end
@@ -107,21 +105,21 @@ class Item
 
   class Beer < Item
     def restrictions
-      [Restriction::DrinkingAge.new(@prompter)]
+      [Restriction::DrinkingAge.new]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
     def restrictions
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
+      [Restriction::DrinkingAge.new, Restriction::SundayBlueLaw.new]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
     def restrictions
-      [Restriction::SmokingAge.new(@prompter)]
+      [Restriction::SmokingAge.new]
     end
   end
 
