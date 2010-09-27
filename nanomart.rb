@@ -49,24 +49,14 @@ class Restriction
 
   class DrinkingAge < Restriction
     def ck
-      age = @prompter.get_age
-      if age >= DRINKING_AGE
-        true
-      else
-        false
-      end
+      @prompter.get_age >= DRINKING_AGE
     end
   end
 
   class SmokingAge< Restriction
 
     def ck
-      age = @prompter.get_age
-      if age >= SMOKING_AGE
-        true
-      else
-        false
-      end
+      @prompter.get_age >= SMOKING_AGE
     end
   end
 
@@ -89,16 +79,8 @@ class Item
 
   def log_sale
     File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+      f.write(@name + "\n")
     end
-  end
-
-  def nam
-    class_string = self.class.to_s
-    short_class_string = class_string.sub(/^Item::/, '')
-    lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
   end
 
   def try_purchase(success)
@@ -110,12 +92,20 @@ class Item
   end
 
   class Beer < Item
+    def initialize(*)
+      @name = "beer"
+      super
+    end
     def rstrctns
       [Restriction::DrinkingAge.new(@prompter)]
     end
   end
 
   class Whiskey < Item
+    def initialize(*)
+      @name = "whiskey"
+      super
+    end
     # you can't sell hard liquor on Sundays for some reason
     def rstrctns
       [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
@@ -123,6 +113,10 @@ class Item
   end
 
   class Cigarettes < Item
+    def initialize(*)
+      @name = "cigarettes"
+      super
+    end
     # you have to be of a certain age to buy tobacco
     def rstrctns
       [Restriction::SmokingAge.new(@prompter)]
@@ -130,15 +124,19 @@ class Item
   end
 
   class Cola < Item
+    def initialize(*)
+      @name = "cola"
+      super
+    end
     def rstrctns
       []
     end
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
-      :canned_haggis
+    def initialize(*)
+      @name = "canned_haggis"
+      super
     end
 
     def rstrctns
