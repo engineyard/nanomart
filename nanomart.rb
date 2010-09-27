@@ -39,15 +39,15 @@ class HighlinePrompter
 end
 
 
-module Restriction
+class Restriction
   DRINKING_AGE = 21
   SMOKING_AGE = 18
 
-  class DrinkingAge
-    def initialize(p)
-      @prompter = p
-    end
+  def initialize(p)
+    @prompter = p
+  end
 
+  class DrinkingAge < Restriction
     def ck
       age = @prompter.get_age
       if age >= DRINKING_AGE
@@ -58,10 +58,7 @@ module Restriction
     end
   end
 
-  class SmokingAge
-    def initialize(p)
-      @prompter = p
-    end
+  class SmokingAge< Restriction
 
     def ck
       age = @prompter.get_age
@@ -73,10 +70,7 @@ module Restriction
     end
   end
 
-  class SundayBlueLaw
-    def initialize(p)
-      @prompter = p
-    end
+  class SundayBlueLaw < Restriction
 
     def ck
       # pp Time.now.wday
