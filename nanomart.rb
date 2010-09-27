@@ -25,9 +25,11 @@ class Nanomart
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
 
+    # check item for restrictions
     itm.rstrctns.each do |r|
       itm.try_purchase(r.ck)
     end
+    # it's all good: sale is ok
     itm.log_sale
   end
 end
@@ -49,6 +51,7 @@ class Restriction
 
   class DrinkingAge < Restriction
     def ck
+      # true = no restriction
       @prompter.get_age >= DRINKING_AGE
     end
   end
@@ -56,6 +59,7 @@ class Restriction
   class SmokingAge< Restriction
 
     def ck
+      # true = no restriction
       @prompter.get_age >= SMOKING_AGE
     end
   end
@@ -65,6 +69,7 @@ class Restriction
     def ck
       # pp Time.now.wday
       # debugger
+      # true = no restriction
       Time.now.wday != 0      # 0 is Sunday
     end
   end
@@ -85,6 +90,7 @@ class Item
 
   def try_purchase(success)
     if success
+      # no restriction
       return true
     else
       raise Nanomart::NoSale
@@ -96,6 +102,7 @@ class Item
       @name = "beer"
       super
     end
+    # you have to be of a certain age to buy beer
     def rstrctns
       [Restriction::DrinkingAge.new(@prompter)]
     end
@@ -106,6 +113,7 @@ class Item
       @name = "whiskey"
       super
     end
+    # you have to be of a certain age to buy whiskey
     # you can't sell hard liquor on Sundays for some reason
     def rstrctns
       [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
@@ -128,6 +136,7 @@ class Item
       @name = "cola"
       super
     end
+    # there are no restrictions
     def rstrctns
       []
     end
@@ -139,6 +148,7 @@ class Item
       super
     end
 
+    # there are no restrictions
     def rstrctns
       []
     end
