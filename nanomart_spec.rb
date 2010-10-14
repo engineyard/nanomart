@@ -45,9 +45,7 @@ describe "making sure the customer is old enough" do
     end
 
     it "stops you from buying anything age-restricted" do
-      lambda { @nanomart.sell_me(:beer)       }.should raise_error(Nanomart::NoSale)
-      lambda { @nanomart.sell_me(:whiskey)    }.should raise_error(Nanomart::NoSale)
-    end
+      lambda { @nanomart.sell_me(:beer)    
   end
 
   context "when you're an old fogey on Thursday" do

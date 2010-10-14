@@ -25,7 +25,7 @@ class Nanomart
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
 
-    itm.rstrctns.each do |r|
+    itm.restrictions.each do |r|
       itm.try_purchase(r.ck)
     end
     itm.log_sale
@@ -100,10 +100,10 @@ class Item
   end
 
   def nam
-    class_string = self.class.to_s
+    class_string       = self.class.to_s
     short_class_string = class_string.sub(/^Item::/, '')
     lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
+    class_sym          = lower_class_string.to_sym
     class_sym
   end
 
@@ -116,27 +116,27 @@ class Item
   end
 
   class Beer < Item
-    def rstrctns
+    def restrictions
       [Restriction::DrinkingAge.new(@prompter)]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
+    def restrictions
       [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
-    def rstrctns
+    def restrictions
       [Restriction::SmokingAge.new(@prompter)]
     end
   end
 
   class Cola < Item
-    def rstrctns
+    def restrictions
       []
     end
   end
@@ -147,7 +147,7 @@ class Item
       :canned_haggis
     end
 
-    def rstrctns
+    def restrictions
       []
     end
   end
