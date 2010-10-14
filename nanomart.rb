@@ -1,6 +1,11 @@
 # you can buy just a few things at this nanomart
+require 'rubygems'
+require 'bundler'
+Bundler.setup
+
 require 'highline'
 require 'logger'
+require 'active_support/core_ext/string/inflections'
 
 class Nanomart
   class NoSale < StandardError; end
@@ -14,25 +19,16 @@ class Nanomart
   end
 
   def sell_me(item_type)
-    item = case item_type
-          when :beer
-            Item::Beer.new(@prompter)
-          when :whiskey
-            Item::Whiskey.new(@prompter)
-          when :cigarettes
-            Item::Cigarettes.new(@prompter)
-          when :cola
-            Item::Cola.new(@prompter)
-          when :canned_haggis
-            Item::CannedHaggis.new(@prompter)
-          else
-            raise ArgumentError, "Don't know how to sell #{item_type}"
-          end
-
+    class_name = item_type.to_s.classify
+    item       = "Item::#{class_name}".constantize
+    item       = item.new(@prompter)
+    
     item.restrictions.each do |r|
       item.try_purchase(r.check)
     end
     log_sale(item)
+  rescue NameError
+    raise ArgumentError, "Don't know how to sell #{item_type}"
   end
 end
 
