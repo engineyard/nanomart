@@ -16,9 +16,11 @@ class Age99
 end
 
 describe "making sure the customer is old enough" do
+  before { @log = StringIO.new }
+
   context "when you're a kid" do
     before(:each) do
-      @nanomart = Nanomart.new('/dev/null', Age9.new)
+      @nanomart = Nanomart.new(@log, Age9.new)
     end
 
     it "lets you buy cola and canned haggis" do
@@ -31,11 +33,27 @@ describe "making sure the customer is old enough" do
       lambda { @nanomart.sell_me(:whiskey)    }.should raise_error(Nanomart::NoSale)
       lambda { @nanomart.sell_me(:cigarettes) }.should raise_error(Nanomart::NoSale)
     end
+    
+    it "logs the name of any item that is sold" do
+      @nanomart.sell_me(:cola)
+      @log.rewind
+      @log.read.should =~ /cola sold/
+    end
+    
+    it "does not log the name of any item that is restricted" do
+      begin
+        @nanomart.sell_me(:cigarettes)
+      rescue Nanomart::NoSale
+      end
+      
+      @log.rewind
+      @log.read.should_not =~ /sold/
+    end    
   end
 
   context "when you're a newly-minted adult" do
     before(:each) do
-      @nanomart = Nanomart.new('/dev/null', Age19.new)
+      @nanomart = Nanomart.new(@log, Age19.new)
     end
 
     it "lets you buy cola, canned haggis, and cigarettes (to hide the taste of the haggis)" do
@@ -51,7 +69,7 @@ describe "making sure the customer is old enough" do
 
   context "when you're an old fogey on Thursday" do
     before(:each) do
-      @nanomart = Nanomart.new('/dev/null', Age99.new)
+      @nanomart = Nanomart.new(@log, Age99.new)
       Time.stub!(:now).and_return(Time.local(2010, 8, 12, 12))  # Thursday Aug 12 2010 12:00
     end
 
@@ -66,7 +84,7 @@ describe "making sure the customer is old enough" do
 
   context "when you're an old fogey on Sunday" do
     before(:each) do
-      @nanomart = Nanomart.new('/dev/null', Age99.new)
+      @nanomart = Nanomart.new(@log, Age99.new)
       Time.stub!(:now).and_return(Time.local(2010, 8, 15, 12))  # Sunday Aug 15 2010 12:00
     end
 

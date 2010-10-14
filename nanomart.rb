@@ -1,26 +1,30 @@
 # you can buy just a few things at this nanomart
 require 'highline'
-
+require 'logger'
 
 class Nanomart
   class NoSale < StandardError; end
 
   def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
+    @log, @prompter = Logger.new(logfile), prompter
+  end
+  
+  def log_sale(item)
+    @log.info("#{item.name} sold")
   end
 
   def sell_me(item_type)
     item = case item_type
           when :beer
-            Item::Beer.new(@logfile, @prompter)
+            Item::Beer.new(@prompter)
           when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
+            Item::Whiskey.new(@prompter)
           when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
+            Item::Cigarettes.new(@prompter)
           when :cola
-            Item::Cola.new(@logfile, @prompter)
+            Item::Cola.new(@prompter)
           when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
+            Item::CannedHaggis.new(@prompter)
           else
             raise ArgumentError, "Don't know how to sell #{item_type}"
           end
@@ -28,7 +32,7 @@ class Nanomart
     item.restrictions.each do |r|
       item.try_purchase(r.check)
     end
-    item.log_sale
+    log_sale(item)
   end
 end
 
@@ -89,16 +93,9 @@ end
 class Item
   INVENTORY_LOG = 'inventory.log'
 
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
+  def initialize(prompter)
+    @prompter = prompter
   end
-
-  def log_sale
-    File.open(@logfile, 'a') do |f|
-      f.write(name.to_s + "\n")
-    end
-  end
-
   def name
     class_string       = self.class.to_s
     short_class_string = class_string.sub(/^Item::/, '')
