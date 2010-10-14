@@ -45,7 +45,8 @@ describe "making sure the customer is old enough" do
     end
 
     it "stops you from buying anything age-restricted" do
-      lambda { @nanomart.sell_me(:beer)    
+      lambda { @nanomart.sell_me(:beer) }
+    end
   end
 
   context "when you're an old fogey on Thursday" do
