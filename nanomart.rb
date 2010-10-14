@@ -49,12 +49,7 @@ module Restriction
     end
 
     def check
-      age = @prompter.get_age
-      if age >= DRINKING_AGE
-        true
-      else
-        false
-      end
+      @prompter.get_age >= DRINKING_AGE
     end
   end
 
@@ -64,12 +59,7 @@ module Restriction
     end
 
     def check
-      age = @prompter.get_age
-      if age >= SMOKING_AGE
-        true
-      else
-        false
-      end
+      @prompter.get_age >= SMOKING_AGE
     end
   end
 
