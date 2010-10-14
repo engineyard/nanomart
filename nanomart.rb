@@ -32,7 +32,7 @@ end
 
 class HighlinePrompter
   def get_age
-    HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
+    HighLine.new.ask('Age? ', Integer)
   end
 end
 
@@ -67,8 +67,6 @@ module Restriction
     end
 
     def check
-      # pp Time.now.wday
-      # debugger
       Time.now.wday != 0      # 0 is Sunday
     end
   end
