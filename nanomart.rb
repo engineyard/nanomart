@@ -38,27 +38,22 @@ end
 
 
 module Restriction
-  DRINKING_AGE = 21
-  SMOKING_AGE = 18
-
-  class DrinkingAge
+  class Age
     def initialize(p)
       @prompter = p
     end
 
     def check
-      @prompter.get_age >= DRINKING_AGE
+      @prompter.get_age >= Age::AGE_LIMIT
     end
   end
 
-  class SmokingAge
-    def initialize(p)
-      @prompter = p
-    end
+  class DrinkingAge < Age
+    Age::AGE_LIMIT = 21
+  end
 
-    def check
-      @prompter.get_age >= SMOKING_AGE
-    end
+  class SmokingAge < Age
+    Age::AGE_LIMIT = 18
   end
 
   class SundayBlueLaw
