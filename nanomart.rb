@@ -23,9 +23,7 @@ class Nanomart
     item       = "Item::#{class_name}".constantize
     item       = item.new(@prompter)
     
-    item.restrictions.each do |r|
-      item.try_purchase(r.check)
-    end
+    item.try_purchase
     log_sale(item)
   rescue NameError
     raise ArgumentError, "Don't know how to sell #{item_type}"
@@ -82,6 +80,7 @@ class Item
   def initialize(prompter)
     @prompter = prompter
   end
+  
   def name
     class_string       = self.class.to_s
     short_class_string = class_string.sub(/^Item::/, '')
@@ -90,12 +89,12 @@ class Item
     class_sym
   end
 
-  def try_purchase(success)
-    if success
-      return true
-    else
-      raise Nanomart::NoSale
+  def try_purchase
+    restrictions.each do |restriction|
+      raise Nanomart::NoSale unless restriction.check
     end
+    
+    true
   end
 
   class Beer < Item
