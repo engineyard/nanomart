@@ -36,7 +36,7 @@ class Nanomart
   
   def log_sale(name, item)
     File.open(@logfile, 'a') do |f|
-      f.write(name.to_s + "\n")
+      f.write(  name.to_s + "\n")
     end
   end
   
