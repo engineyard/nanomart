@@ -15,6 +15,35 @@ class Age99
   def get_age() 99 end
 end
 
+describe "test logging" do
+  before do
+    require 'tempfile'
+    @log_path = Tempfile.new('test').path
+    @nanomart = Nanomart.new(@log_path, Age99.new)    
+  end
+  
+  describe "when you buy Beer" do
+    before do
+      @nanomart.sell_me(:beer)  
+    end
+    
+    it "should be logged" do
+      File.read(@log_path).should == "beer\n"
+    end
+  end
+
+  describe "when you buy Canned Hagging" do
+    before do
+      @nanomart.sell_me(:canned_haggis)
+    end
+    
+    it "should be logged" do
+      File.read(@log_path).should == "canned_haggis\n"
+    end
+  end
+
+end
+
 describe "making sure the customer is old enough" do
   context "when you're a kid" do
     before(:each) do

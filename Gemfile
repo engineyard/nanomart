@@ -1,5 +1,5 @@
 gem 'highline'
 
 group :test do
-  gem 'rspec', :require => 'spec'
+  gem 'rspec', '~>1.1', :require => 'spec'
 end
