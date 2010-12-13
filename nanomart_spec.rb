@@ -1,7 +1,7 @@
 require 'spec'
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'nanomart'
-
+require 'fileutils'
 
 class Age9
   def get_age() 9 end
@@ -13,6 +13,39 @@ end
 
 class Age99
   def get_age() 99 end
+end
+
+
+describe Item do
+  context "Beer is purchased" do 
+    it " if i am of age" do
+      b = Item::Beer.new(Age99.new) 
+      b.purchase.should be_true()
+    end
+    it " not if i am too young " do
+      lambda {
+        b = Item::Beer.new(Age9.new) 
+        b.purchase
+      }.should raise_error(Nanomart::NoSale)
+    end
+  end
+end
+
+describe "Logging" do
+  before(:each) do
+  end
+  it "logs successfull sale" do
+    b = Item::Beer.new(Age99.new) 
+    b.purchase
+    pending
+  end
+  it "doesn't log successfull sale" do
+    b = Item::Beer.new(Age9.new) 
+    lambda {
+      b.purchase
+    }.should raise_error(Nanomart::NoSale)
+    pending
+  end
 end
 
 describe "making sure the customer is old enough" do
@@ -62,6 +95,7 @@ describe "making sure the customer is old enough" do
       lambda { @nanomart.sell_me(:cigarettes)    }.should_not raise_error
       lambda { @nanomart.sell_me(:beer)          }.should_not raise_error
       lambda { @nanomart.sell_me(:whiskey)       }.should_not raise_error
+      lambda { @nanomart.sell_me(:booties)       }.should raise_error
     end
   end
 
