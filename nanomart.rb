@@ -9,8 +9,8 @@ class Nanomart
     @logfile, @prompter = logfile, prompter
   end
 
-  def sell_me(itm_type)
-    itm = case itm_type
+  def sell_me(item_type)
+    item = case item_type
           when :beer
             Item::Beer.new(@logfile, @prompter)
           when :whiskey
@@ -22,13 +22,13 @@ class Nanomart
           when :canned_haggis
             Item::CannedHaggis.new(@logfile, @prompter)
           else
-            raise ArgumentError, "Don't know how to sell #{itm_type}"
+            raise ArgumentError, "Don't know how to sell #{item_type}"
           end
 
-    itm.restrictions.each do |r|
-      itm.try_purchase(r.check_conditions)
+    item.restrictions.each do |r|
+      item.try_purchase(r.check_conditions)
     end
-    itm.log_sale
+    item.log_sale
   end
 end
 
@@ -87,8 +87,6 @@ module Restriction
 end
 
 class Item
-  INVENTORY_LOG = 'inventory.log'
-
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
   end
@@ -138,11 +136,6 @@ class Item
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.name doesn't work here
-    def name
-      :canned_haggis
-    end
-
     def restrictions
       []
     end
