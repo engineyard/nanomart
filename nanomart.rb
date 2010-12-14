@@ -10,24 +10,29 @@ class Nanomart
   end
 
   def sell_me(itm_type)
+    # constant = itm_type.constantize
+    # itm = constant.new(@logfile, @prompter)
     itm = case itm_type
           when :beer
-            Item::Beer.new(@logfile, @prompter)
+            Beer.new(@logfile, @prompter)
           when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
+            Whiskey.new(@logfile, @prompter)
           when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
+            Cigarettes.new(@logfile, @prompter)
           when :cola
-            Item::Cola.new(@logfile, @prompter)
+            Cola.new(@logfile, @prompter)
           when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
+            CannedHaggis.new(@logfile, @prompter)
           else
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
 
     itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
+      if ! r.ck
+        raise Nanomart::NoSale
+      end
     end
+    
     itm.log_sale
   end
 end
@@ -38,51 +43,32 @@ class HighlinePrompter
   end
 end
 
-
-module Restriction
+class Restriction
   DRINKING_AGE = 21
   SMOKING_AGE = 18
 
-  class DrinkingAge
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
-      age = @prompter.get_age
-      if age >= DRINKING_AGE
-        true
-      else
-        false
-      end
-    end
+  def initialize(p)
+    @prompter = p
   end
+end
 
-  class SmokingAge
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
-      age = @prompter.get_age
-      if age >= SMOKING_AGE
-        true
-      else
-        false
-      end
-    end
+class DrinkingAge < Restriction
+  def ck
+    @prompter.get_age >= DRINKING_AGE
   end
+end
 
-  class SundayBlueLaw
-    def initialize(p)
-      @prompter = p
-    end
+class SmokingAge< Restriction
+  def ck
+    @prompter.get_age >= SMOKING_AGE
+  end
+end
 
-    def ck
-      # pp Time.now.wday
-      # debugger
-      Time.now.wday != 0      # 0 is Sunday
-    end
+class SundayBlueLaw < Restriction
+  def ck
+    # pp Time.now.wday
+    # debugger
+    Time.now.wday != 0      # 0 is Sunday
   end
 end
 
@@ -95,61 +81,49 @@ class Item
 
   def log_sale
     File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+      f.write(nam + "\n")
     end
   end
 
   def nam
-    class_string = self.class.to_s
-    short_class_string = class_string.sub(/^Item::/, '')
-    lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
+    self.class.to_s.downcase
   end
 
-  def try_purchase(success)
-    if success
-      return true
-    else
-      raise Nanomart::NoSale
-    end
-  end
+end
 
-  class Beer < Item
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter)]
-    end
-  end
-
-  class Whiskey < Item
-    # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
-    end
-  end
-
-  class Cigarettes < Item
-    # you have to be of a certain age to buy tobacco
-    def rstrctns
-      [Restriction::SmokingAge.new(@prompter)]
-    end
-  end
-
-  class Cola < Item
-    def rstrctns
-      []
-    end
-  end
-
-  class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
-      :canned_haggis
-    end
-
-    def rstrctns
-      []
-    end
+class Beer < Item
+  def rstrctns
+    [DrinkingAge.new(@prompter)]
   end
 end
 
+class Whiskey < Item
+  # you can't sell hard liquor on Sundays for some reason
+  def rstrctns
+    [DrinkingAge.new(@prompter), SundayBlueLaw.new(@prompter)]
+  end
+end
+
+class Cigarettes < Item
+  # you have to be of a certain age to buy tobacco
+  def rstrctns
+    [SmokingAge.new(@prompter)]
+  end
+end
+
+class Cola < Item
+  def rstrctns
+    []
+  end
+end
+
+class CannedHaggis < Item
+  # the common-case implementation of Item.nam doesn't work here
+  def nam
+    :canned_haggis.to_s
+  end
+
+  def rstrctns
+    []
+  end
+end
