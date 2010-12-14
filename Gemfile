@@ -1,5 +1,8 @@
+source "http://rubygems.org"
+
 gem 'highline'
 
 group :test do
-  gem 'rspec', :require => 'spec'
+  gem 'rake'
+  gem 'rspec'
 end
