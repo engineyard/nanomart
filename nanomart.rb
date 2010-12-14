@@ -1,44 +1,6 @@
 # you can buy just a few things at this nanomart
 require 'highline'
 
-
-class Nanomart
-  class NoSale < StandardError; end
-
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
-  end
-
-  def sell_me(item_type)
-    item = case item_type
-          when :beer
-            Item::Beer.new(@logfile, @prompter)
-          when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
-          when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
-          when :cola
-            Item::Cola.new(@logfile, @prompter)
-          when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
-          else
-            raise ArgumentError, "Don't know how to sell #{item_type}"
-          end
-
-    item.restrictions.each do |r|
-      item.try_purchase(r.check_conditions)
-    end
-    item.log_sale
-  end
-end
-
-class HighlinePrompter
-  def get_age
-    HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
-  end
-end
-
-
 module Restriction
   DRINKING_AGE = 21
   SMOKING_AGE = 18
@@ -86,9 +48,43 @@ module Restriction
   end
 end
 
-class Item
+class Nanomart
+  INVENTORY = {
+    :beer => [Restriction::DrinkingAge],
+    :whiskey => [Restriction::DrinkingAge, Restriction::SundayBlueLaw],
+    :cigarettes => [Restriction::SmokingAge],
+    :canned_haggis => [],
+    :cola => []
+  }
+
+  class NoSale < StandardError; end
+
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
+  end
+
+  def sell_me(item_type)
+    raise NoSale, "Don't know how to sell #{item_type}" unless INVENTORY.has_key? item_type
+    item = Item.new(item_type, @logfile, @prompter)
+
+    item.restrictions.each do |r|
+      item.try_purchase(r.check_conditions)
+    end
+    item.log_sale
+  end
+end
+
+class HighlinePrompter
+  def get_age
+    HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
+  end
+end
+
+
+
+class Item
+  def initialize(type, logfile, prompter)
+    @type, @logfile, @prompter = type, logfile, prompter
   end
 
   def log_sale
@@ -109,35 +105,9 @@ class Item
     end
   end
 
-  class Beer < Item
-    def restrictions
-      [Restriction::DrinkingAge.new(@prompter)]
-    end
-  end
-
-  class Whiskey < Item
-    # you can't sell hard liquor on Sundays for some reason
-    def restrictions
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
-    end
-  end
-
-  class Cigarettes < Item
-    # you have to be of a certain age to buy tobacco
-    def restrictions
-      [Restriction::SmokingAge.new(@prompter)]
-    end
-  end
-
-  class Cola < Item
-    def restrictions
-      []
-    end
-  end
-
-  class CannedHaggis < Item
-    def restrictions
-      []
+  def restrictions
+    Nanomart::INVENTORY[@type].map do |restriction|
+      restriction.new(@prompter)
     end
   end
 end
