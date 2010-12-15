@@ -10,7 +10,7 @@ class Nanomart
   end
 
   def sell_me(itm_type)
-    itm = case itm_type
+    item = case itm_type
           when :beer
             Item::Beer.new(@logfile, @prompter)
           when :whiskey
@@ -25,10 +25,10 @@ class Nanomart
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
 
-    itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
+    item.restrictions.each do |r|
+      item.try_purchase(r.age_check)
     end
-    itm.log_sale
+    item.log_sale
   end
 end
 
@@ -48,7 +48,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def age_check
       age = @prompter.get_age
       if age >= DRINKING_AGE
         true
@@ -63,7 +63,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def age_check
       age = @prompter.get_age
       if age >= SMOKING_AGE
         true
@@ -78,7 +78,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def age_check
       # pp Time.now.wday
       # debugger
       Time.now.wday != 0      # 0 is Sunday
@@ -116,27 +116,32 @@ class Item
   end
 
   class Beer < Item
-    def rstrctns
+    def restrictions
       [Restriction::DrinkingAge.new(@prompter)]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
+    def restrictions
       [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
+    end
+  end
+  
+  class WhiskeyCigarrets < Item
+    def restrictions
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
-    def rstrctns
+    def restrictions
       [Restriction::SmokingAge.new(@prompter)]
     end
   end
 
   class Cola < Item
-    def rstrctns
+    def restrictions
       []
     end
   end
@@ -147,7 +152,7 @@ class Item
       :canned_haggis
     end
 
-    def rstrctns
+    def restrictions
       []
     end
   end
