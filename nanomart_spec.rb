@@ -30,6 +30,7 @@ describe "making sure the customer is old enough" do
       lambda { @nanomart.sell_me(:beer)       }.should raise_error(Nanomart::NoSale)
       lambda { @nanomart.sell_me(:whiskey)    }.should raise_error(Nanomart::NoSale)
       lambda { @nanomart.sell_me(:cigarettes) }.should raise_error(Nanomart::NoSale)
+      lambda { @nanomart.sell_me(:whiskey_cigarettes) }.should raise_error(Nanomart::NoSale)
     end
   end
 
@@ -38,10 +39,11 @@ describe "making sure the customer is old enough" do
       @nanomart = Nanomart.new('/dev/null', Age19.new)
     end
 
-    it "lets you buy cola, canned haggis, and cigarettes (to hide the taste of the haggis)" do
+    it "lets you buy cola, canned haggis, and cigarettes (to hide the taste of the haggis) and whiskey cigarettes" do
       lambda { @nanomart.sell_me(:cola)          }.should_not raise_error
       lambda { @nanomart.sell_me(:canned_haggis) }.should_not raise_error
       lambda { @nanomart.sell_me(:cigarettes)    }.should_not raise_error
+      lambda { @nanomart.sell_me(:whiskey_cigarettes)    }.should_not raise_error
     end
 
     it "stops you from buying anything age-restricted" do
@@ -62,6 +64,7 @@ describe "making sure the customer is old enough" do
       lambda { @nanomart.sell_me(:cigarettes)    }.should_not raise_error
       lambda { @nanomart.sell_me(:beer)          }.should_not raise_error
       lambda { @nanomart.sell_me(:whiskey)       }.should_not raise_error
+      lambda { @nanomart.sell_me(:whiskey_cigarettes)   }.should_not raise_error
     end
   end
 
@@ -73,6 +76,7 @@ describe "making sure the customer is old enough" do
 
     it "stops you from buying hard alcohol" do
       lambda { @nanomart.sell_me(:whiskey)       }.should raise_error(Nanomart::NoSale)
+      lambda { @nanomart.sell_me(:whiskey_cigarettes)       }.should raise_error(Nanomart::NoSale)
     end
   end
 end

@@ -1,6 +1,4 @@
-# you can buy just a few things at this nanomart
-require 'highline'
-require 'active_support/core_ext/string/inflections'
+# you can buy just a few things at this nanomart  
 
 class Nanomart
   class NoSale < StandardError; end
@@ -10,8 +8,7 @@ class Nanomart
   end
 
   def sell_me(item_type)
-    klass = Item.const_get(item_type.to_s.classify)
-    item = klass.new(@logfile, @prompter)
+    item = Item.new(@logfile, @prompter, item_type)
     
     item.restrictions.each do |r|
       item.try_purchase(r.age_check)
@@ -68,24 +65,33 @@ module Restriction
 end
 
 class Item
+  
+  ItemRestrictions = {
+    :cola => [],
+    :canned_haggis => [],
+    :cigarettes  => [Restriction::SmokingAge],
+    :beer    => [Restriction::DrinkingAge],
+    :whiskey => [Restriction::DrinkingAge, Restriction::SundayBlueLaw],
+    :whiskey_cigarettes => [Restriction::SmokingAge, Restriction::SundayBlueLaw]
+  }
+  
   INVENTORY_LOG = 'inventory.log'
 
-  def initialize(logfile, prompter)
+  def initialize(logfile, prompter, item_type)
     @logfile, @prompter = logfile, prompter
+    @item_type = item_type
   end
 
-  def log_sale
-    File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+  def restrictions
+    ItemRestrictions[@item_type].each.map do |klass|
+      klass.new(@prompter)
     end
   end
-
-  def nam
-    class_string = self.class.to_s
-    short_class_string = class_string.sub(/^Item::/, '')
-    lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
+  
+  def log_sale
+    File.open(@logfile, 'a') do |f|
+      f.write(@item_type.to_s + "\n")
+    end
   end
 
   def try_purchase(success)
@@ -95,47 +101,6 @@ class Item
       raise Nanomart::NoSale
     end
   end
-
-  class Beer < Item
-    def restrictions
-      [Restriction::DrinkingAge.new(@prompter)]
-    end
-  end
-
-  class Whiskey < Item
-    # you can't sell hard liquor on Sundays for some reason
-    def restrictions
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
-    end
-  end
   
-  class WhiskeyCigarrets < Item
-    def restrictions
-    end
-  end
-
-  class Cigarettes < Item
-    # you have to be of a certain age to buy tobacco
-    def restrictions
-      [Restriction::SmokingAge.new(@prompter)]
-    end
-  end
-
-  class Cola < Item
-    def restrictions
-      []
-    end
-  end
-
-  class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
-      :canned_haggis
-    end
-
-    def restrictions
-      []
-    end
-  end
 end
 
