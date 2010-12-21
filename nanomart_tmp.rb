@@ -12,11 +12,11 @@ class Nanomart
   def sell_me(itm_type)
     itm = case itm_type
           when :beer
-            Item::Beer.new(@logfile, @prompter, :alcohol)
+            Item::Beer.new(@logfile, @prompter)
           when :whiskey
-            Item::Whiskey.new(@logfile, @prompter, :alcohol, :blue)
+            Item::Whiskey.new(@logfile, @prompter)
           when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter, :smoke)
+            Item::Cigarettes.new(@logfile, @prompter)
           when :cola
             Item::Cola.new(@logfile, @prompter)
           when :canned_haggis
@@ -26,7 +26,7 @@ class Nanomart
           end
 
     itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck(itm))
+      itm.try_purchase(r.ck)
     end
     itm.log_sale
   end
@@ -48,17 +48,9 @@ module Restriction
       @prompter = p;
     end
    
-    def ck (itm)
+    def ck ()
       age = @prompter.get_age
-      age_limit = age
-      limit = itm.types.each do |t|
-        if (t == :alcohol) 
-          age_limit = DRINKING_AGE
-        elsif(t == :smoke) 
-          age_limit = SMOKING_AGE
-        end
-      end
-      if age >= age_limit
+      if age >= AGE_LIMIT
         true
       else
         false
@@ -71,17 +63,10 @@ module Restriction
       @prompter = p
     end
 
-    def ck (itm)
-      age = @prompter.get_age
-      limit = itm.types.all? do |t|
-        if (t == :blue)
-          # pp Time.now.wday
-          # debugger
-          Time.now.wday != 0      # 0 is Sunday
-        else
-          true
-        end
-      end
+    def ck
+      # pp Time.now.wday
+      # debugger
+      Time.now.wday != 0      # 0 is Sunday
     end
   end
 end
@@ -89,12 +74,10 @@ end
 class Item
   INVENTORY_LOG = 'inventory.log'
 
-  def initialize(logfile, prompter, *types)
-    @logfile, @prompter, @types = logfile, prompter, types
+  def initialize(logfile, prompter)
+    @logfile, @prompter = logfile, prompter
   end
 
-  attr_reader :types
-  
   def log_sale
     File.open(@logfile, 'a') do |f|
       f.write(nam.to_s + "\n")
@@ -119,27 +102,30 @@ class Item
 
   class RestrItem < Item
     def rstrctns
-      [Restriction::AgeLimit.new(@prompter)]
+      [Restriction::AgeLimint.new(@prompter)]
     end
   end
 
+  class Beer < RestrItem
+  end
+  
   class Beer < Item
     def rstrctns
-      [Restriction::AgeLimit.new(@prompter)]
+      [Restriction::DrinkingAge.new(@prompter)]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
     def rstrctns
-      [Restriction::AgeLimit.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
+      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
     def rstrctns
-      [Restriction::AgeLimit.new(@prompter)]
+      [Restriction::SmokingAge.new(@prompter)]
     end
   end
 
