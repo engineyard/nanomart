@@ -16,14 +16,14 @@ class Nanomart
 
     itm = nil
     Item.subcl.each do |klass|
-      if klass.nam == itm_type
+      if klass.respond_to?(:nam) && klass.nam == itm_type
         itm = klass.new(@logfile, @prompter)
       end
     end
     raise ArgumentError, "Don't know how to sell #{itm_type}" if itm.nil?
 
     itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
+      itm.try_purchase(r.ck(@prompter))
     end
     itm.log_sale
   end
