@@ -2,6 +2,17 @@
 class Item
   INVENTORY_LOG = 'inventory.log'
 
+  def self.subcl
+    @@subcl
+  end
+  def self.inherited(subclass)
+    @@subcl ||= []
+    @@subcl << subclass
+  end
+  def self.nam
+    raise Exception.new " #{self.name}: should define self.nam"
+  end
+
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
   end
@@ -28,41 +39,5 @@ class Item
     end
   end
 
-  class Beer < Item
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter)]
-    end
-  end
-
-  class Whiskey < Item
-    # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
-    end
-  end
-
-  class Cigarettes < Item
-    # you have to be of a certain age to buy tobacco
-    def rstrctns
-      [Restriction::SmokingAge.new(@prompter)]
-    end
-  end
-
-  class Cola < Item
-    def rstrctns
-      []
-    end
-  end
-
-  class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
-      :canned_haggis
-    end
-
-    def rstrctns
-      []
-    end
-  end
 end
 

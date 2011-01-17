@@ -11,20 +11,16 @@ class Nanomart
   end
 
   def sell_me(itm_type)
-    itm = case itm_type
-          when :beer
-            Item::Beer.new(@logfile, @prompter)
-          when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
-          when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
-          when :cola
-            Item::Cola.new(@logfile, @prompter)
-          when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
-          else
-            raise ArgumentError, "Don't know how to sell #{itm_type}"
-          end
+    require 'lib/items/general'
+    require 'lib/items/table'
+
+    itm = nil
+    Item.subcl.each do |klass|
+      if klass.nam == itm_type
+        itm = klass.new(@logfile, @prompter)
+      end
+    end
+    raise ArgumentError, "Don't know how to sell #{itm_type}" if itm.nil?
 
     itm.rstrctns.each do |r|
       itm.try_purchase(r.ck)
