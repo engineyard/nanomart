@@ -2,7 +2,24 @@ require 'rspec'
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'nanomart'
 
+# religious-based (Muslim) preferences
+class ObservantMuslim
+  def get_restriction_value() true end
 
+  def preference_type
+    :halal
+  end
+end
+
+class ReformMuslim
+  def get_restriction_value() false end
+
+  def preference_type
+    :halal
+  end
+end
+
+# age-based restrictions
 class Age9
   def get_restriction_value() 9 end
 
@@ -24,6 +41,26 @@ class Age99
 
   def preference_type
     :age
+  end
+end
+
+describe "helping Muslim customers keep halal" do
+  context "when you're following halal" do
+    before(:each) do
+      @nanomart = Nanomart.new('/dev/null', [ObservantMuslim.new, Age99.new])
+    end
+
+    it "lets you buy cola" do
+      lambda { @nanomart.sell_me(:cola)          }.should_not raise_error
+    end
+
+    pending "lets you buy beef ribs" do
+      lambda { @nanomart.sell_me(:beef_ribs)     }.should_not raise_error
+    end
+
+    it "doesn't let you buy liverwurst" do
+      lambda { @nanomart.sell_me(:liverwurst)     }.should raise_error(Nanomart::NoSale)
+    end
   end
 end
 
@@ -97,4 +134,3 @@ describe "making sure the customer is old enough" do
     end
   end
 end
-

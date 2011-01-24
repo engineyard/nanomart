@@ -19,6 +19,8 @@ class Nanomart
             Item::Cigarettes.new(@logfile, @preference_list)
           when :cola
             Item::Cola.new(@logfile, @preference_list)
+          when :liverwurst
+            Item::Liverwurst.new(@logfile, @preference_list)
           when :canned_haggis
             Item::CannedHaggis.new(@logfile, @preference_list)
           else
@@ -89,6 +91,24 @@ module Restriction
     end
   end
 
+  class NonHalal
+    def initialize(p)
+      @preference_list = p
+    end
+
+    def ck
+      @preference_list.each do |preference|
+        if preference.preference_type == :halal
+          if preference.get_restriction_value != true
+            return true
+          else
+            return false
+          end
+        end
+      end
+    end
+  end
+
   class SundayBlueLaw
     def initialize(p)
       @preference_list = p
@@ -150,6 +170,13 @@ class Item
   class Cola < Item
     def rstrctns
       []
+    end
+  end
+
+
+  class Liverwurst < Item
+    def rstrctns
+      [Restriction::NonHalal.new(@preference_list)]
     end
   end
 
