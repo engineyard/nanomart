@@ -25,6 +25,16 @@ class Nanomart
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
 
+    #itm == what you are trying to buy
+    
+    #how old are you?
+    
+    #are you old enough to buy item?
+    
+    #is it sunday
+    
+  
+    
     itm.rstrctns.each do |r|
       itm.try_purchase(r.ck)
     end
@@ -39,29 +49,28 @@ class HighlinePrompter
 end
 
 
+
 module Restriction
   DRINKING_AGE = 21
   SMOKING_AGE = 18
 
-  class DrinkingAge
+
+  class StupidLaws
     def initialize(p)
       @prompter = p
     end
+  end
 
+  class DrinkingAge < StupidLaws
     def ck
       age = @prompter.get_age
       if age >= DRINKING_AGE
         true
-      else
-        false
       end
     end
   end
 
-  class SmokingAge
-    def initialize(p)
-      @prompter = p
-    end
+  class SmokingAge < StupidLaws
 
     def ck
       age = @prompter.get_age
@@ -73,10 +82,7 @@ module Restriction
     end
   end
 
-  class SundayBlueLaw
-    def initialize(p)
-      @prompter = p
-    end
+  class SundayBlueLaw < StupidLaws
 
     def ck
       # pp Time.now.wday
