@@ -15,6 +15,23 @@ class Age99
   def get_age() 99 end
 end
 
+describe "test item type" do
+  before :each do
+    @nanomart = Nanomart.new('/dev/null', Age9.new)
+  end
+  context "when the item type exist" do
+    it "should not raise an error" do
+      lambda { @nanomart.sell_me(:cola)          }.should_not raise_error
+    end
+  end
+  
+  context "when the item type does not exist" do
+    it "should raise an ArgumentError exception" do
+      lambda { @nanomart.sell_me(:sprite)          }.should raise_error(ArgumentError)
+    end
+  end
+end
+
 describe "making sure the customer is old enough" do
   context "when you're a kid" do
     before(:each) do

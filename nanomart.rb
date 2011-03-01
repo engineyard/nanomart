@@ -1,6 +1,6 @@
 # you can buy just a few things at this nanomart
 require 'highline'
-
+require 'active_support'
 
 class Nanomart
   class NoSale < StandardError; end
@@ -10,23 +10,10 @@ class Nanomart
   end
 
   def sell_me(itm_type)
-    # itm_class = itm_type.to_s.constantize
-    # begin
-    #   itm_class.new(@logfile, @prompter)
-    #   
-    # end
-    itm = case itm_type
-    when :beer
-      Item::Beer.new(@logfile, @prompter)
-    when :whiskey
-      Item::Whiskey.new(@logfile, @prompter)
-    when :cigarettes
-      Item::Cigarettes.new(@logfile, @prompter)
-    when :cola
-      Item::Cola.new(@logfile, @prompter)
-    when :canned_haggis
-      Item::CannedHaggis.new(@logfile, @prompter)
-    else
+    begin
+    itm_class = "Item::#{itm_type.to_s.classify}".constantize
+    itm = itm_class.new(@logfile, @prompter)
+    rescue NameError => error
       raise ArgumentError, "Don't know how to sell #{itm_type}"
     end
 
