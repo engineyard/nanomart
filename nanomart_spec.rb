@@ -74,6 +74,27 @@ describe "making sure the customer is old enough" do
     it "stops you from buying hard alcohol" do
       lambda { @nanomart.sell_me(:whiskey)       }.should raise_error(Nanomart::NoSale)
     end
+
+    it "lets you buy other products" do
+      lambda { @nanomart.sell_me(:cola)          }.should_not raise_error
+      lambda { @nanomart.sell_me(:canned_haggis) }.should_not raise_error
+      lambda { @nanomart.sell_me(:cigarettes)    }.should_not raise_error
+      lambda { @nanomart.sell_me(:beer)          }.should_not raise_error
+    end
+  end
+end
+
+describe "restrictions" do
+  context "when I check the age" do
+    before do
+      @restriction = Restriction::Age.new(21)
+    end
+    it "raises an error when the age is under 21" do
+      lambda { @restriction.ck(Age9.new) }.should raise_error
+    end
+    it "does not raise an error when the age is over 21" do
+      lambda {@restriction.ck(Age99.new) }.should_not raise_error
+    end
   end
 end
 
