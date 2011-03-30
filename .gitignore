@@ -1,2 +1,4 @@
 .bundle
 inventory.log
+*.rbc
+.rvmrc
