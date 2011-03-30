@@ -5,35 +5,30 @@ require 'highline'
 class Nanomart
   class NoSale < StandardError; end
 
-  def initialize(logfile, prompter)
+  def initialize(logfile="nanomart.log", prompter=HighlinePrompter.new)
     @logfile, @prompter = logfile, prompter
   end
 
-  def sell_me(itm_type)
-    itm = case itm_type
-          when :beer
-            Item::Beer.new(@logfile, @prompter)
-          when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
-          when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
-          when :cola
-            Item::Cola.new(@logfile, @prompter)
-          when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
-          else
-            raise ArgumentError, "Don't know how to sell #{itm_type}"
-          end
+  attr_reader :logfile, :prompter
 
-    retval =  if itm.rstrctns.all? do |r|
-      itm.try_purchase(r.ck)
+  def age
+    @age ||= prompter.get_age
+  end
+
+  def logger
+    @logger ||= File.open(logfile, "a")
+  end
+
+  def log(item)
+    logger.puts item.name
+    logger.flush
+  end
+
+  def sell_me(item_name)
+    item = Item.get(item_name)
+    item.check(self).tap do |res|
+      log(item) if res
     end
-      itm.log_sale
-      true
-    else
-      false
-    end
-    return retval
   end
 end
 
@@ -43,118 +38,76 @@ class HighlinePrompter
   end
 end
 
-
-module Restriction
-  DRINKING_AGE = 21
-  SMOKING_AGE = 18
-
-  class DrinkingAge
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
-      age = @prompter.get_age
-      if age >= DRINKING_AGE
-        true
-      else
-        false
-      end
-    end
-  end
-
-  class SmokingAge
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
-      age = @prompter.get_age
-      if age >= SMOKING_AGE
-        true
-      else
-        false
-      end
-    end
-  end
-
-  class SundayBlueLaw
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
-      # pp Time.now.wday
-      # debugger
-      Time.now.wday != 0      # 0 is Sunday
-    end
-  end
-end
-
 class Item
-  INVENTORY_LOG = 'inventory.log'
-
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
+  @@items = {}
+  def self.register(name, restrictions=[])
+    @@items[name] = new(name, restrictions)
   end
 
-  def log_sale
-    File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
-    end
+  def self.get(name)
+    @@items[name]
   end
 
-  def nam
-    class_string = self.class.to_s
-    short_class_string = class_string.sub(/^Item::/, '')
-    lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
+  def self.all
+    @@items
   end
 
-  def try_purchase(success)
-    if success
-      return true
-    else
-      return false
-    end
+  attr_accessor :name
+
+  def restrictions
+    @restrictions.map{|r| Restriction.get(r) }
   end
 
-  class Beer < Item
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter)]
-    end
+  def initialize(name, restrictions=[])
+    @name, @restrictions = name, restrictions
   end
 
-  class Whiskey < Item
-    # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
-    end
-  end
-
-  class Cigarettes < Item
-    # you have to be of a certain age to buy tobacco
-    def rstrctns
-      [Restriction::SmokingAge.new(@prompter)]
-    end
-  end
-
-  class Cola < Item
-    def rstrctns
-      []
-    end
-  end
-
-  class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
-      :canned_haggis
-    end
-
-    def rstrctns
-      []
+  def check(mart)
+    restrictions.all? do |r|
+      r.valid?(mart)
     end
   end
 end
 
+class Restriction
+  @@restrictions = {}
+  def self.register(name, &blk)
+    @@restrictions[name] = new(name,blk)
+  end
+
+  def self.all
+    @@restrictions
+  end
+
+  def self.get(name)
+    @@restrictions[name]
+  end
+
+  attr_accessor :name, :blk
+
+  def initialize(name, blk)
+    @name, @blk = name, blk
+  end
+
+  def valid?(mart)
+    blk.call(mart)
+  end
+end
+
+Restriction.register(:over_21) do |mart|
+  mart.age > 21
+end
+
+Restriction.register(:over_18) do |mart|
+  mart.age > 18
+end
+
+Restriction.register(:no_sundays) do |mart|
+  Time.now.wday != 0
+end
+
+Item.register(:cola)
+Item.register(:canned_haggis)
+Item.register(:cigarettes, [:over_18])
+Item.register(:beer, [:over_21])
+Item.register(:whiskey, [:over_21, :no_sundays])
