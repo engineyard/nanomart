@@ -25,10 +25,15 @@ class Nanomart
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
 
-    itm.rstrctns.each do |r|
+    retval =  if itm.rstrctns.all? do |r|
       itm.try_purchase(r.ck)
     end
-    itm.log_sale
+      itm.log_sale
+      true
+    else
+      false
+    end
+    return retval
   end
 end
 
@@ -111,7 +116,7 @@ class Item
     if success
       return true
     else
-      raise Nanomart::NoSale
+      return false
     end
   end
 
