@@ -74,6 +74,13 @@ describe "making sure the customer is old enough" do
     it "stops you from buying hard alcohol" do
       @nanomart.sell_me(:whiskey).should be_false
     end
+
+    it "lets you buy everything else" do
+      @nanomart.sell_me(:cola).should be_true
+      @nanomart.sell_me(:beer).should be_true
+      @nanomart.sell_me(:canned_haggis).should be_true
+      @nanomart.sell_me(:cigarettes).should be_true
+    end
   end
 end
 
