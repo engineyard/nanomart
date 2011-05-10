@@ -19,7 +19,7 @@ class Nanomart
   def sell_me(itm_type)
     itm = create_item(itm_type)
     itm.restrictions.each do |r|
-      itm.try_purchase(r.ck)
+      itm.try_purchase(r.check)
     end
     itm.log_sale
   end
