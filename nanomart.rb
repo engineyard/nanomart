@@ -18,10 +18,10 @@ class Nanomart
   end
 
   def sell_me(item_type)
-    itm = create_item(item_type)
-    itm.restrictions.each do |r|
-      itm.try_purchase(r.check)
+    item = create_item(item_type)
+    item.restrictions.each do |r|
+      item.try_purchase(r.check)
     end
-    itm.log_sale
+    item.log_sale
   end
 end
