@@ -14,7 +14,7 @@ class Nanomart
   end
 
   def create_item(item_type)
-    @items[item_type].new(@logfile, @prompter)
+    Item.new(item_type, @logfile, @prompter)
   end
 
   def sell_me(item_type)
