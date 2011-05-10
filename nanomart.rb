@@ -24,4 +24,3 @@ class Nanomart
     itm.log_sale
   end
 end
-require 'restriction'
