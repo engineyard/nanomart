@@ -8,16 +8,17 @@ class Nanomart
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
     
-    @items = {:beer => Item::Beer, :whiskey => Item::Whiskey, :cigarettes => Item::Cigarettes, 
-        :cola => Item::Cola, :canned_haggis => Item::CannedHaggis }
+    @items = {:beer => Item::Beer, :whiskey => Item::Whiskey, 
+        :cigarettes => Item::Cigarettes, :cola => Item::Cola, 
+        :canned_haggis => Item::CannedHaggis }
   end
 
-  def create_item(itm_type)
-    @items[itm_type].new(@logfile, @prompter)
+  def create_item(item_type)
+    @items[item_type].new(@logfile, @prompter)
   end
 
-  def sell_me(itm_type)
-    itm = create_item(itm_type)
+  def sell_me(item_type)
+    itm = create_item(item_type)
     itm.restrictions.each do |r|
       itm.try_purchase(r.check)
     end
