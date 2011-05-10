@@ -75,5 +75,18 @@ describe "making sure the customer is old enough" do
       lambda { @nanomart.sell_me(:whiskey)       }.should raise_error(Nanomart::NoSale)
     end
   end
+  
+  context "when you want something we don't have" do
+    before(:each) do
+      @nanomart = Nanomart.new('/dev/null', Age99.new)
+      Time.stub!(:now).and_return(Time.local(2010, 8, 15, 12))  # Sunday Aug 15 2010 12:00
+    end
+
+    it "stops you from buying nonexisten items" do
+      lambda { @nanomart.sell_me(:robots)       }.should raise_error(Nanomart::NoSale)
+      lambda { @nanomart.sell_me(:monkey_glasses)    }.should raise_error(Nanomart::NoSale)
+    end
+    
+  end
 end
 
