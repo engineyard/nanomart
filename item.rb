@@ -8,12 +8,12 @@ class Item
     :cigarettes => [Restriction::SmokingAge], :canned_haggis => [],
     :cola => []}
 
-  def initialize(item_type, logfile, prompter)
+  def initialize(item_type, logfile, age)
     unless RESTRICTIONS.has_key?(item_type)
       raise Nanomart::NoSale
     end
     
-    @item_type, @logfile, @prompter = item_type, logfile, prompter
+    @item_type, @logfile, @age = item_type, logfile, age
     populate_restrictions
   end
   
@@ -44,7 +44,7 @@ class Item
   def populate_restrictions
     @restrictions = []
     RESTRICTIONS[@item_type].each do |r|
-      @restrictions << r.new(@prompter)
+      @restrictions << r.new(@age)
     end
   end
 end
