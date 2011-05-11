@@ -1,0 +1,6 @@
+A few other things I would have changed had time allowed:
+
+. Pass ages as integers rather than classes.
+. Make restrictions inherit from Restriction superclass rather
+  than living in Restriction module.
+. OAOO the age checks by using a common method.
