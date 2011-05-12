@@ -9,26 +9,12 @@ class Nanomart
     @logfile, @prompter = logfile, prompter
   end
 
-  def sell_me(itm_type)
-    itm = case itm_type
-          when :beer
-            Item::Beer.new(@logfile, @prompter)
-          when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
-          when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
-          when :cola
-            Item::Cola.new(@logfile, @prompter)
-          when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
-          else
-            raise ArgumentError, "Don't know how to sell #{itm_type}"
-          end
-
-    itm.rstrctns.each do |r|
-      itm.try_purchase(r.check_age)
+  def sell_me(item_class)
+    item = item_class.new(@logfile, @prompter)
+    item.rstrctns.each do |r|
+      item.try_purchase(r.check_age)
     end
-    itm.log_sale
+    item.log_sale
   end
 end
 
