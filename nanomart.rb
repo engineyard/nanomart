@@ -12,7 +12,7 @@ class Nanomart
   def sell_me(item_class)
     item = item_class.new(@logfile, @prompter)
     begin
-      item.rstrctns.each do |r|
+      item.restrictions.each do |r|
         item.try_purchase(r.check_age)
       end
       item.log_sale
@@ -92,27 +92,27 @@ class Item
   end
 
   class Beer < Item
-    def rstrctns
+    def restrictions
       [DrinkingAge.new(@prompter)]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
+    def restrictions
       [DrinkingAge.new(@prompter), SundayBlueLaw.new(@prompter)]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
-    def rstrctns
+    def restrictions
       [SmokingAge.new(@prompter)]
     end
   end
 
   class Cola < Item
-    def rstrctns
+    def restrictions
       []
     end
   end
@@ -123,7 +123,7 @@ class Item
       :canned_haggis
     end
 
-    def rstrctns
+    def restrictions
       []
     end
   end
