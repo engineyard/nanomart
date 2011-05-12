@@ -11,10 +11,15 @@ class Nanomart
 
   def sell_me(item_class)
     item = item_class.new(@logfile, @prompter)
-    item.rstrctns.each do |r|
-      item.try_purchase(r.check_age)
+    begin
+      item.rstrctns.each do |r|
+        item.try_purchase(r.check_age)
+      end
+      item.log_sale
+    rescue Nanomart::NoSale
+      item.log_no_sale
+      raise Nanomart::NoSale
     end
-    item.log_sale
   end
 end
 
@@ -64,7 +69,13 @@ class Item
 
   def log_sale
     File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+      f.write("Sold #{nam} to person of age #{@prompter.get_age}\n")
+    end
+  end
+  
+  def log_no_sale
+    File.open(@logfile, 'a') do |f|
+      f.write("Refused to #{nam} to person of age #{@prompter.get_age}\n")
     end
   end
 
