@@ -26,7 +26,7 @@ class Nanomart
           end
 
     itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
+      itm.try_purchase(r.check_age)
     end
     itm.log_sale
   end
@@ -51,7 +51,7 @@ module Restriction
 end
 
 class DrinkingAge < Restriction::Base
-  def ck
+  def check_age
     age = @prompter.get_age
     if age >= DRINKING_AGE
       true
@@ -62,7 +62,7 @@ class DrinkingAge < Restriction::Base
 end
 
 class SmokingAge < Restriction::Base
-  def ck
+  def check_age
     age = @prompter.get_age
     if age >= SMOKING_AGE
       true
@@ -73,7 +73,7 @@ class SmokingAge < Restriction::Base
 end
 
 class SundayBlueLaw < Restriction::Base
-  def ck
+  def check_age
     # pp Time.now.wday
     # debugger
     Time.now.wday != 0      # 0 is Sunday
