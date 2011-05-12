@@ -52,30 +52,18 @@ end
 
 class DrinkingAge < Restriction::Base
   def check_age
-    age = @prompter.get_age
-    if age >= DRINKING_AGE
-      true
-    else
-      false
-    end
+    @prompter.get_age >= DRINKING_AGE
   end
 end
 
 class SmokingAge < Restriction::Base
   def check_age
-    age = @prompter.get_age
-    if age >= SMOKING_AGE
-      true
-    else
-      false
-    end
+    @prompter.get_age >= SMOKING_AGE
   end
 end
 
 class SundayBlueLaw < Restriction::Base
   def check_age
-    # pp Time.now.wday
-    # debugger
     Time.now.wday != 0      # 0 is Sunday
   end
 end
