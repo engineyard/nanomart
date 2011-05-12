@@ -91,11 +91,7 @@ class Item
   end
 
   def try_purchase(success)
-    if success
-      return true
-    else
-      raise Nanomart::NoSale
-    end
+    success ? true : raise (Nanomart::NoSale)
   end
 
   class Beer < Item
