@@ -18,7 +18,7 @@ end
 describe "making sure the customer is old enough" do
   context "when you're a kid" do
     before(:each) do
-      @nanomart = Nanomart.new('/dev/null', Age9.new)
+      @nanomart = Nanomart.new('george.log', Age9.new)
     end
 
     it "lets you buy cola and canned haggis" do
