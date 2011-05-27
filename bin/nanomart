@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH << File.expand_path('../../lib', __FILE__)
+
+require 'rubygems'
+require 'bundler'
+
+Bundler.setup :default
+
+require 'nanomart'
+
+nanomart = Nanomart.new "log.txt", HighlinePrompter.new
+
+begin
+  item = nanomart.sell_me ARGV[0].to_sym
+  puts "You purchased #{item.name}"
+rescue Nanomart::NoSale
+  puts "No sale"
+end
