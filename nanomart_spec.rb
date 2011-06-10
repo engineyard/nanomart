@@ -1,6 +1,7 @@
 require 'rspec'
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'nanomart'
+require 'tempfile'
 
 
 class Age9
@@ -77,3 +78,11 @@ describe "making sure the customer is old enough" do
   end
 end
 
+describe "when buying an item" do
+  it "logs the sale" do
+    logfile = Tempfile.new("nanomart.log")
+    nanomart = Nanomart.new(logfile.path, Age99.new)
+    nanomart.sell_me(:whiskey)
+    logfile.read.should == "whiskey\n"
+  end
+end
