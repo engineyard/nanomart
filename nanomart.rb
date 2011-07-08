@@ -12,15 +12,15 @@ class Nanomart
   def sell_me(itm_type)
     itm = case itm_type
           when :beer
-            Item::Beer.new(@logfile, @prompter)
+            Item.new(@logfile, @prompter, [Restriction::DrinkingAge.new(@prompter)])
           when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
+            Item.new(@logfile, @prompter, [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)])
           when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
+            Item.new(@logfile, @prompter, [Restriction::SmokingAge.new(@prompter)])
           when :cola
-            Item::Cola.new(@logfile, @prompter)
+            Item.new(@logfile, @prompter, [])
           when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
+            Item.new(@logfile, @prompter, [])
           else
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
@@ -88,9 +88,12 @@ end
 
 class Item
   INVENTORY_LOG = 'inventory.log'
+  
+  attr_reader :rstrctns
 
-  def initialize(logfile, prompter)
+  def initialize(logfile, prompter, restrictions = nil)
     @logfile, @prompter = logfile, prompter
+    @rstrctns = restrictions
   end
 
   def log_sale
@@ -115,41 +118,6 @@ class Item
     end
   end
 
-  class Beer < Item
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter)]
-    end
-  end
 
-  class Whiskey < Item
-    # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
-    end
-  end
-
-  class Cigarettes < Item
-    # you have to be of a certain age to buy tobacco
-    def rstrctns
-      [Restriction::SmokingAge.new(@prompter)]
-    end
-  end
-
-  class Cola < Item
-    def rstrctns
-      []
-    end
-  end
-
-  class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
-      :canned_haggis
-    end
-
-    def rstrctns
-      []
-    end
-  end
 end
 

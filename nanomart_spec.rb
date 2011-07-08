@@ -7,8 +7,12 @@ class Age9
   def get_age() 9 end
 end
 
-class Age19
-  def get_age() 19 end
+class Age18
+  def get_age() 18 end
+end
+
+class Age21
+  def get_age() 21 end
 end
 
 class Age99
@@ -33,9 +37,9 @@ describe "making sure the customer is old enough" do
     end
   end
 
-  context "when you're a newly-minted adult" do
+  context "when you're 18" do
     before(:each) do
-      @nanomart = Nanomart.new('/dev/null', Age19.new)
+      @nanomart = Nanomart.new('/dev/null', Age18.new)
     end
 
     it "lets you buy cola, canned haggis, and cigarettes (to hide the taste of the haggis)" do
@@ -47,6 +51,18 @@ describe "making sure the customer is old enough" do
     it "stops you from buying anything age-restricted" do
       lambda { @nanomart.sell_me(:beer)       }.should raise_error(Nanomart::NoSale)
       lambda { @nanomart.sell_me(:whiskey)    }.should raise_error(Nanomart::NoSale)
+    end
+  end
+
+  context "as 21" do
+    before(:each) do
+      @nanomart = Nanomart.new('/dev/null', Age21.new)
+    end
+
+    it "test restricted/nonrestricted" do
+      lambda { @nanomart.sell_me(:cola)}.should_not raise_error
+      lambda { @nanomart.sell_me(:cigarettes)}.should_not raise_error
+      lambda { @nanomart.sell_me(:whiskey)}.should_not raise_error
     end
   end
 
