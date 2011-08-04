@@ -11,13 +11,19 @@ class Nanomart
 
   def sell_me(item_type)
     itm = begin
-      "Item::#{item_type.to_s.camelize}".constantize.new(@logfile, @prompter)
+      "Item::#{item_type.to_s.camelize}".constantize.new
     rescue NameError
       raise ArgumentError, "Don't know how to sell #{item_type}"
     end
     
-    itm.try_purchase
-    itm.log_sale
+    itm.try_purchase(@prompter)
+    log_sale(itm)
+  end
+
+  def log_sale(item)
+    File.open(@logfile, 'a') do |f|
+      f.write(item.name.to_s + "\n")
+    end
   end
 end
 
@@ -52,28 +58,12 @@ module Restriction
 end
 
 class Item
-  INVENTORY_LOG = 'inventory.log'
-
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
-  end
-
-  def log_sale
-    File.open(@logfile, 'a') do |f|
-      f.write(name.to_s + "\n")
-    end
-  end
-
   def name
-    class_string = self.class.to_s
-    short_class_string = class_string.sub(/^Item::/, '')
-    lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
+    self.class.name.demodulize.underscore.to_sym
   end
 
-  def try_purchase
-    restrictions.all? {|r| r.check(@prompter)} or
+  def try_purchase(prompter)
+    restrictions.all? {|r| r.check(prompter)} or
       raise Nanomart::NoSale
   end
 
@@ -104,11 +94,6 @@ class Item
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.name doesn't work here
-    def name
-      :canned_haggis
-    end
-
     def restrictions
       []
     end

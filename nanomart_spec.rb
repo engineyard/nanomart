@@ -104,19 +104,34 @@ describe "making sure the customer is old enough" do
   
   context "logging sales" do
     before(:each) do
-      @nanomart = Nanomart.new('nanomart.log', Age99.new)
+      @nanomart = Nanomart.new('nanomart.log', Age9.new)
     end
     
     after(:each) do
-      FileUtils.rm("nanomart.log")
+      FileUtils.rm("nanomart.log") if File.exists?("nanomart.log")
     end
     
     it "logs the name of each purchased item" do
       @nanomart.sell_me(:cola)
-      @nanomart.sell_me(:whiskey)
+      @nanomart.sell_me(:canned_haggis)
       
-      File.read("nanomart.log").should == "cola\nwhiskey\n"
+      File.read("nanomart.log").should == "cola\ncanned_haggis\n"
+    end
+    
+    it "doesn't log products that are restricted" do
+      lambda { @nanomart.sell_me(:whiskey) }.should raise_error
+      File.should_not exist("nanomart.log")
     end
   end
 end
 
+describe Item do
+  describe ".name" do
+    it "returns the name of Whiskey" do
+      Item::Whiskey.new.name.should == :whiskey
+    end
+    it "returns the name of CannedHaggis" do
+      Item::CannedHaggis.new.name.should == :canned_haggis
+    end
+  end
+end
