@@ -75,5 +75,48 @@ describe "making sure the customer is old enough" do
       lambda { @nanomart.sell_me(:whiskey)       }.should raise_error(Nanomart::NoSale)
     end
   end
+  
+  context "when you don't know your age on sunday" do
+    before(:each) do
+      class Clueless
+        def get_age
+          raise "Don't know"
+        end
+      end
+      @nanomart = Nanomart.new('/dev/null', Clueless.new)
+      Time.stub!(:now).and_return(Time.local(2010, 8, 15, 12))  # Sunday Aug 15 2010 12:00
+    end
+
+    it "doesn't matter for whiskey buying" do
+      lambda { @nanomart.sell_me(:whiskey)       }.should raise_error(Nanomart::NoSale)
+    end
+  end
+  
+  context "when attempting to buy an unknown product" do
+    before(:each) do
+      @nanomart = Nanomart.new('/dev/null', Age99.new)
+    end
+
+    it "raises an error" do
+      lambda { @nanomart.sell_me(:kleenex) }.should raise_error(ArgumentError, "Don't know how to sell kleenex")
+    end
+  end
+  
+  context "logging sales" do
+    before(:each) do
+      @nanomart = Nanomart.new('nanomart.log', Age99.new)
+    end
+    
+    after(:each) do
+      FileUtils.rm("nanomart.log")
+    end
+    
+    it "logs the name of each purchased item" do
+      @nanomart.sell_me(:cola)
+      @nanomart.sell_me(:whiskey)
+      
+      File.read("nanomart.log").should == "cola\nwhiskey\n"
+    end
+  end
 end
 

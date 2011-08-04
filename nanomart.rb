@@ -1,6 +1,6 @@
 # you can buy just a few things at this nanomart
 require 'highline'
-
+require 'active_support/inflector'
 
 class Nanomart
   class NoSale < StandardError; end
@@ -9,25 +9,14 @@ class Nanomart
     @logfile, @prompter = logfile, prompter
   end
 
-  def sell_me(itm_type)
-    itm = case itm_type
-          when :beer
-            Item::Beer.new(@logfile, @prompter)
-          when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
-          when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
-          when :cola
-            Item::Cola.new(@logfile, @prompter)
-          when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
-          else
-            raise ArgumentError, "Don't know how to sell #{itm_type}"
-          end
-
-    itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
+  def sell_me(item_type)
+    itm = begin
+      "Item::#{item_type.to_s.camelize}".constantize.new(@logfile, @prompter)
+    rescue NameError
+      raise ArgumentError, "Don't know how to sell #{item_type}"
     end
+    
+    itm.try_purchase
     itm.log_sale
   end
 end
@@ -44,43 +33,19 @@ module Restriction
   SMOKING_AGE = 18
 
   class DrinkingAge
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
-      age = @prompter.get_age
-      if age >= DRINKING_AGE
-        true
-      else
-        false
-      end
+    def check(prompter)
+      prompter.get_age >= DRINKING_AGE
     end
   end
 
   class SmokingAge
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
-      age = @prompter.get_age
-      if age >= SMOKING_AGE
-        true
-      else
-        false
-      end
+    def check(prompter)
+      prompter.get_age >= SMOKING_AGE
     end
   end
 
   class SundayBlueLaw
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
-      # pp Time.now.wday
-      # debugger
+    def check(prompter)
       Time.now.wday != 0      # 0 is Sunday
     end
   end
@@ -95,11 +60,11 @@ class Item
 
   def log_sale
     File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+      f.write(name.to_s + "\n")
     end
   end
 
-  def nam
+  def name
     class_string = self.class.to_s
     short_class_string = class_string.sub(/^Item::/, '')
     lower_class_string = short_class_string.downcase
@@ -107,47 +72,44 @@ class Item
     class_sym
   end
 
-  def try_purchase(success)
-    if success
-      return true
-    else
+  def try_purchase
+    restrictions.all? {|r| r.check(@prompter)} or
       raise Nanomart::NoSale
-    end
   end
 
   class Beer < Item
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter)]
+    def restrictions
+      [Restriction::DrinkingAge.new]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
+    def restrictions
+      [Restriction::SundayBlueLaw.new, Restriction::DrinkingAge.new]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
-    def rstrctns
-      [Restriction::SmokingAge.new(@prompter)]
+    def restrictions
+      [Restriction::SmokingAge.new]
     end
   end
 
   class Cola < Item
-    def rstrctns
+    def restrictions
       []
     end
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
+    # the common-case implementation of Item.name doesn't work here
+    def name
       :canned_haggis
     end
 
-    def rstrctns
+    def restrictions
       []
     end
   end
