@@ -1,47 +1,34 @@
-
-module Restriction
+class Restriction
   DRINKING_AGE = 21
   SMOKING_AGE = 18
 
-  class DrinkingAge
-    def initialize(p)
-      @prompter = p
-    end
+  def initialize(p)
+    @prompter = p
+  end
+
+  def age
+    @age ||= @prompter.get_age
+  end
+
+  class DrinkingAge < Restriction
 
     def check
-      age = @prompter.get_age
-      if age >= DRINKING_AGE
-        true
-      else
-        false
-      end
+      age >= DRINKING_AGE
     end
   end
 
-  class SmokingAge
-    def initialize(p)
-      @prompter = p
-    end
+  class SmokingAge < Restriction
 
     def check
-      age = @prompter.get_age
-      if age >= SMOKING_AGE
-        true
-      else
-        false
-      end
+      age >= SMOKING_AGE
     end
   end
 
-  class SundayBlueLaw
-    def initialize(p)
-      @prompter = p
-    end
+  class SundayBlueLaw < Restriction
+    SUNDAY_DAY_OF_WEEK = 0
 
     def check
-      # pp Time.now.wday
-      # debugger
-      Time.now.wday != 0      # 0 is Sunday
+      Time.now.wday != SUNDAY_DAY_OF_WEEK
     end
   end
 end
