@@ -16,7 +16,7 @@ class Nanomart
 
     item_class = Item.items.detect{ |klass| klass.item_name == item_type }
 
-    if item
+    if item_class
       item = item_class.new(@logfile, @prompter)
     else
       raise ArgumentError, "Don't know how to sell #{item_type}"
