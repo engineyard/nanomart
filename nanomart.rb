@@ -28,7 +28,7 @@ class Nanomart
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
 
-    itm.rstrctns.each do |r|
+    itm.restrictions.each do |r|
       itm.try_purchase(r.ck)
     end
     itm.log_sale
