@@ -14,7 +14,9 @@ class Nanomart
 
   def sell_me(item_type)
 
-    if item_class = Item.items.detect{ |klass| klass.item_name.to_sym == item_type }
+    item_class = Item.items.detect{ |klass| klass.item_name == item_type }
+
+    if item
       item = item_class.new(@logfile, @prompter)
     else
       raise ArgumentError, "Don't know how to sell #{item_type}"
