@@ -31,6 +31,7 @@ describe "making sure the customer is old enough" do
       lambda { @nanomart.sell_me(:whiskey)    }.should raise_error(Nanomart::NoSale)
       lambda { @nanomart.sell_me(:cigarettes) }.should raise_error(Nanomart::NoSale)
     end
+    
   end
 
   context "when you're a newly-minted adult" do
@@ -76,6 +77,9 @@ describe "making sure the customer is old enough" do
     end
   end
   
+  
+describe "item metadata"
+
   context "item subclasses" do
     before :all do
       class Item::Sample < Item; end
