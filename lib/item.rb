@@ -7,12 +7,16 @@ class Item
 
   def log_sale
     File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+      f.write(item_name.to_s + "\n")
     end
   end
 
-  def nam
-    class_string = self.class.to_s
+  def item_name
+    self.class.item_name
+  end
+
+  def self.item_name
+    class_string = self.to_s
     short_class_string = class_string.sub(/^Item::/, '')
     lower_class_string = short_class_string.downcase
     class_sym = lower_class_string.to_sym
@@ -21,6 +25,15 @@ class Item
 
   def try_purchase(success)
     success || raise(Nanomart::NoSale)
+  end
+  
+  def self.inherited(subclass)
+    items << subclass
+  end
+
+  def self.items
+    @items ||= []
+    @items
   end
 
   class Beer < Item
@@ -50,13 +63,14 @@ class Item
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
-      :canned_haggis
-    end
+    # the common-case implementation of Item.item_name doesn't work here
 
     def restrictions
       []
+    end
+
+    def self.item_name
+      :canned_haggis
     end
   end
 end

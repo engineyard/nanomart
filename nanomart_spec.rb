@@ -75,5 +75,20 @@ describe "making sure the customer is old enough" do
       lambda { @nanomart.sell_me(:whiskey)       }.should raise_error(Nanomart::NoSale)
     end
   end
+  
+  context "item subclasses" do
+    before :all do
+      class Item::Sample < Item; end
+    end
+
+    it "registers with its parent" do
+      Item.items.should include(Item::Sample)
+    end
+    
+    it "has a type name" do
+      Item::Sample.item_name.should == :sample
+    end
+  end
+  
 end
 
