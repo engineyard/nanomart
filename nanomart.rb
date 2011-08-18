@@ -21,7 +21,7 @@ class Nanomart
     end
 
     item.restrictions.each do |r|
-      item.try_purchase(r.ck)
+      item.try_purchase(r.check)
     end
     item.log_sale
   end

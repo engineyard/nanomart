@@ -8,7 +8,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def check
       age = @prompter.get_age
       if age >= DRINKING_AGE
         true
@@ -23,7 +23,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def check
       age = @prompter.get_age
       if age >= SMOKING_AGE
         true
@@ -38,7 +38,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def check
       # pp Time.now.wday
       # debugger
       Time.now.wday != 0      # 0 is Sunday
