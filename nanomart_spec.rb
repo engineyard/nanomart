@@ -91,6 +91,33 @@ describe Log do
   end
 end
 
+
+module Restriction
+  class Passing
+    def check
+      true
+    end
+  end
+
+  class Failing
+    def check
+      false
+    end
+  end
+end
+
+class TestItemWithPassingRestrictions < Item
+  def restrictions
+    [Restriction::Passing.new]
+  end
+end
+
+class TestItemWithFailingRestriction < Item
+  def restrictions
+    [Restriction::Passing.new, Restriction::Failing.new]
+  end
+end
+
 describe Item do
   describe '#log_sale' do
     it 'should call Log.log_purchase' do
@@ -101,30 +128,13 @@ describe Item do
 
   describe '#try_purchase' do
     it 'should check each of its restrictions, and fail' do
-      item = Item.new
-
-      r1 = mock('Restriction')
-      r1.should_receive(:check).and_return(true)
-
-      r2 = mock('Restriction')
-      r2.should_receive(:check).and_return(false)
-
-      item.stub(:restrictions => [r1, r2])
-
+      item = TestItemWithFailingRestriction.new
       lambda { item.try_purchase }.should raise_error(Nanomart::NoSale)
     end
 
     it 'should check each of its restrictions, and pass' do
-      item = Item.new
-
-      r1 = mock('Restriction')
-      r1.should_receive(:check).and_return(true)
-
-      r2 = mock('Restriction')
-      r2.should_receive(:check).and_return(true)
-
-      item.stub(:restrictions => [r1, r2])
-
+      item = TestItemWithPassingRestrictions.new
+      item.restrictions
       lambda { item.try_purchase }.should_not raise_error(Nanomart::NoSale)
     end
   end
