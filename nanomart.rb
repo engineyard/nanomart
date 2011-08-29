@@ -59,8 +59,6 @@ module Restriction
 
   class SundayBlueLaw
     def check
-      # pp Time.now.wday
-      # debugger
       Time.now.wday != 0      # 0 is Sunday
     end
   end
@@ -79,14 +77,6 @@ class Item
     end
   end
 
-  def nam
-    class_string = self.class.to_s
-    short_class_string = class_string.sub(/^Item::/, '')
-    lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
-  end
-
   def try_purchase(success)
     if success
       return true
@@ -95,9 +85,17 @@ class Item
     end
   end
 
+  def restrictions
+    []
+  end
+
   class Beer < Item
     def restrictions
       [Restriction::DrinkingAge.new]
+    end
+
+    def nam
+      :beer
     end
   end
 
@@ -106,6 +104,10 @@ class Item
     def restrictions
       [Restriction::DrinkingAge.new, Restriction::SundayBlueLaw.new]
     end
+
+    def nam
+      :whiskey
+    end
   end
 
   class Cigarettes < Item
@@ -113,22 +115,21 @@ class Item
     def restrictions
       [Restriction::SmokingAge.new]
     end
+
+    def nam
+      :cigarettes
+    end
   end
 
   class Cola < Item
-    def restrictions
-      []
+    def nam
+      :cola
     end
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
     def nam
       :canned_haggis
-    end
-
-    def restrictions
-      []
     end
   end
 end
