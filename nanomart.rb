@@ -42,12 +42,7 @@ class Nanomart
             raise ArgumentError, "Don't know how to sell #{item_type}"
           end
 
-    # TODO check all restrictions, THEN buy it
-
-    item.restrictions.each do |r|
-      item.try_purchase(r.check)
-    end
-    item.try_purchase(true)
+    item.try_purchase
   end
 end
 
@@ -84,13 +79,12 @@ module Restriction
 end
 
 class Item
-  def try_purchase(success)
-    if success
-      Log.log_purchase(self)
-      return true
-    else
-      raise Nanomart::NoSale
+  def try_purchase
+    restrictions.each do |r|
+      raise Nanomart::NoSale unless r.check
     end
+    Log.log_purchase(self)
+    true
   end
 
   def restrictions

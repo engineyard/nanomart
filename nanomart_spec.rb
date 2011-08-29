@@ -95,7 +95,37 @@ describe Item do
   describe '#log_sale' do
     it 'should call Log.log_purchase' do
       Log.should_receive(:log_purchase)
-      Item::CannedHaggis.new.try_purchase(true)
+      Item::CannedHaggis.new.try_purchase
+    end
+  end
+
+  describe '#try_purchase' do
+    it 'should check each of its restrictions, and fail' do
+      item = Item.new
+
+      r1 = mock('Restriction')
+      r1.should_receive(:check).and_return(true)
+
+      r2 = mock('Restriction')
+      r2.should_receive(:check).and_return(false)
+
+      item.stub(:restrictions => [r1, r2])
+
+      lambda { item.try_purchase }.should raise_error(Nanomart::NoSale)
+    end
+
+    it 'should check each of its restrictions, and pass' do
+      item = Item.new
+
+      r1 = mock('Restriction')
+      r1.should_receive(:check).and_return(true)
+
+      r2 = mock('Restriction')
+      r2.should_receive(:check).and_return(true)
+
+      item.stub(:restrictions => [r1, r2])
+
+      lambda { item.try_purchase }.should_not raise_error(Nanomart::NoSale)
     end
   end
 end
