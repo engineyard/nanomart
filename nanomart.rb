@@ -9,38 +9,45 @@ class Log
     end
   end
 
-  def self.log_purchase(product, file)
-    return unless file
+  def self.log_purchase(product, file=nil)
+    file ||= logfile
     log("Purchased #{product.name.to_s}", file)
   end
+
+  def self.logfile=(file)
+    @file = file
+  end
+
+  def self.logfile
+    @file
+  end
 end
+
 class Nanomart
   class NoSale < StandardError; end
-
-  def initialize(logfile)
-    @logfile = logfile
-  end
 
   def sell_me(item_type)
     item = case item_type
           when :beer
-            Item::Beer.new(@logfile)
+            Item::Beer.new
           when :whiskey
-            Item::Whiskey.new(@logfile)
+            Item::Whiskey.new
           when :cigarettes
-            Item::Cigarettes.new(@logfile)
+            Item::Cigarettes.new
           when :cola
-            Item::Cola.new(@logfile)
+            Item::Cola.new
           when :canned_haggis
-            Item::CannedHaggis.new(@logfile)
+            Item::CannedHaggis.new
           else
             raise ArgumentError, "Don't know how to sell #{item_type}"
           end
 
+    # TODO check all restrictions, THEN buy it
+
     item.restrictions.each do |r|
       item.try_purchase(r.check)
     end
-    item.log_sale
+    item.try_purchase(true)
   end
 end
 
@@ -77,19 +84,9 @@ module Restriction
 end
 
 class Item
-  def initialize(logfile)
-    @logfile = logfile
-  end
-
-  def log_sale
-    File.open(@logfile, 'a') do |f|
-      f.write(name.to_s + "\n")
-    end
-  end
-
   def try_purchase(success)
     if success
-      Log.log_purchase(self, nil)
+      Log.log_purchase(self)
       return true
     else
       raise Nanomart::NoSale

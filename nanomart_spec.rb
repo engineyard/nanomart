@@ -8,7 +8,8 @@ describe "making sure the customer is old enough" do
   context "when you're a kid" do
     before(:each) do
       HighlinePrompter.stub(:get_age).and_return(9)
-      @nanomart = Nanomart.new('/dev/null')
+      Log.logfile = '/dev/null'
+      @nanomart = Nanomart.new
     end
 
     it "lets you buy cola and canned haggis" do
@@ -26,7 +27,8 @@ describe "making sure the customer is old enough" do
   context "when you're a newly-minted adult" do
     before(:each) do
       HighlinePrompter.stub(:get_age).and_return(19)
-      @nanomart = Nanomart.new('/dev/null')
+      Log.logfile = '/dev/null'
+      @nanomart = Nanomart.new
     end
 
     it "lets you buy cola, canned haggis, and cigarettes (to hide the taste of the haggis)" do
@@ -44,7 +46,8 @@ describe "making sure the customer is old enough" do
   context "when you're an old fogey on Thursday" do
     before(:each) do
       HighlinePrompter.stub(:get_age).and_return(99)
-      @nanomart = Nanomart.new('/dev/null')
+      Log.logfile = '/dev/null'
+      @nanomart = Nanomart.new
       Time.stub!(:now).and_return(Time.local(2010, 8, 12, 12))  # Thursday Aug 12 2010 12:00
     end
 
@@ -60,7 +63,8 @@ describe "making sure the customer is old enough" do
   context "when you're an old fogey on Sunday" do
     before(:each) do
       HighlinePrompter.stub(:get_age).and_return(99)
-      @nanomart = Nanomart.new('/dev/null')
+      Log.logfile = '/dev/null'
+      @nanomart = Nanomart.new
       Time.stub!(:now).and_return(Time.local(2010, 8, 15, 12))  # Sunday Aug 15 2010 12:00
     end
 
@@ -80,7 +84,7 @@ describe Log do
   it 'should log the purchase of a product' do
     logfile = Tempfile.new("nanomart-test")
 
-    the_item = Item::Beer.new(nil)
+    the_item = Item::Beer.new
     Log.log_purchase(the_item, logfile.path)
 
     File.read(logfile.path).strip.should == 'Purchased beer'
@@ -91,7 +95,17 @@ describe Item do
   describe '#log_sale' do
     it 'should call Log.log_purchase' do
       Log.should_receive(:log_purchase)
-      Item::CannedHaggis.new(nil).try_purchase(true)
+      Item::CannedHaggis.new.try_purchase(true)
     end
+  end
+end
+
+describe 'integration' do
+  it 'should log the purchase of a canned haggis' do
+    logfile = Tempfile.new("nanomart-test")
+    Log.logfile = logfile.path
+    nanomart = Nanomart.new
+    nanomart.sell_me(:canned_haggis)
+    File.read(logfile.path).strip.should == 'Purchased canned_haggis'
   end
 end
