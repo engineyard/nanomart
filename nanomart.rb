@@ -9,8 +9,8 @@ class Nanomart
     @logfile = logfile
   end
 
-  def sell_me(itm_type)
-    itm = case itm_type
+  def sell_me(item_type)
+    item = case item_type
           when :beer
             Item::Beer.new(@logfile)
           when :whiskey
@@ -22,13 +22,13 @@ class Nanomart
           when :canned_haggis
             Item::CannedHaggis.new(@logfile)
           else
-            raise ArgumentError, "Don't know how to sell #{itm_type}"
+            raise ArgumentError, "Don't know how to sell #{item_type}"
           end
 
-    itm.restrictions.each do |r|
-      itm.try_purchase(r.check)
+    item.restrictions.each do |r|
+      item.try_purchase(r.check)
     end
-    itm.log_sale
+    item.log_sale
   end
 end
 
