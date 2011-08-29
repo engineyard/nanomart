@@ -84,7 +84,6 @@ class Item
       raise Nanomart::NoSale unless r.check
     end
     Log.log_purchase(self)
-    true
   end
 
   def restrictions
