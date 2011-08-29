@@ -5,22 +5,22 @@ require 'highline'
 class Nanomart
   class NoSale < StandardError; end
 
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
+  def initialize(logfile)
+    @logfile = logfile
   end
 
   def sell_me(itm_type)
     itm = case itm_type
           when :beer
-            Item::Beer.new(@logfile, @prompter)
+            Item::Beer.new(@logfile)
           when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
+            Item::Whiskey.new(@logfile)
           when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
+            Item::Cigarettes.new(@logfile)
           when :cola
-            Item::Cola.new(@logfile, @prompter)
+            Item::Cola.new(@logfile)
           when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
+            Item::CannedHaggis.new(@logfile)
           else
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
@@ -33,7 +33,7 @@ class Nanomart
 end
 
 class HighlinePrompter
-  def get_age
+  def self.get_age
     HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
   end
 end
@@ -44,32 +44,20 @@ module Restriction
   SMOKING_AGE = 18
 
   class DrinkingAge
-    def initialize(p)
-      @prompter = p
-    end
-
     def check
-      age = @prompter.get_age
+      age = HighlinePrompter.get_age
       age >= DRINKING_AGE
     end
   end
 
   class SmokingAge
-    def initialize(p)
-      @prompter = p
-    end
-
     def check
-      age = @prompter.get_age
+      age = HighlinePrompter.get_age
       age >= SMOKING_AGE
     end
   end
 
   class SundayBlueLaw
-    def initialize(p)
-      @prompter = p
-    end
-
     def check
       # pp Time.now.wday
       # debugger
@@ -81,8 +69,8 @@ end
 class Item
   INVENTORY_LOG = 'inventory.log'
 
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
+  def initialize(logfile)
+    @logfile = logfile
   end
 
   def log_sale
@@ -109,21 +97,21 @@ class Item
 
   class Beer < Item
     def restrictions
-      [Restriction::DrinkingAge.new(@prompter)]
+      [Restriction::DrinkingAge.new]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
     def restrictions
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
+      [Restriction::DrinkingAge.new, Restriction::SundayBlueLaw.new]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
     def restrictions
-      [Restriction::SmokingAge.new(@prompter)]
+      [Restriction::SmokingAge.new]
     end
   end
 
