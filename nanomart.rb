@@ -73,7 +73,7 @@ class Item
 
   def log_sale
     File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+      f.write(name.to_s + "\n")
     end
   end
 
@@ -94,7 +94,7 @@ class Item
       [Restriction::DrinkingAge.new]
     end
 
-    def nam
+    def name
       :beer
     end
   end
@@ -105,7 +105,7 @@ class Item
       [Restriction::DrinkingAge.new, Restriction::SundayBlueLaw.new]
     end
 
-    def nam
+    def name
       :whiskey
     end
   end
@@ -116,19 +116,19 @@ class Item
       [Restriction::SmokingAge.new]
     end
 
-    def nam
+    def name
       :cigarettes
     end
   end
 
   class Cola < Item
-    def nam
+    def name
       :cola
     end
   end
 
   class CannedHaggis < Item
-    def nam
+    def name
       :canned_haggis
     end
   end
