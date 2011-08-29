@@ -1,7 +1,7 @@
 require 'rspec'
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'nanomart'
-
+require 'tempfile'
 
 
 describe "making sure the customer is old enough" do
@@ -70,3 +70,19 @@ describe "making sure the customer is old enough" do
   end
 end
 
+describe Log do
+  it 'should append a line to a logfile' do
+    logfile = Tempfile.new("nanomart-test")
+    Log.log("This is a test", logfile.path)
+    File.read(logfile.path).strip.should == 'This is a test'
+  end
+
+  it 'should log the purchase of a product' do
+    logfile = Tempfile.new("nanomart-test")
+
+    the_item = Item::Beer.new(nil)
+    Log.log_purchase(the_item, logfile.path)
+
+    File.read(logfile.path).strip.should == 'Purchased beer'
+  end
+end

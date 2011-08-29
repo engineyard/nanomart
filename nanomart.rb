@@ -2,6 +2,17 @@
 require 'highline'
 
 
+class Log
+  def self.log(message, file)
+    File.open(file, 'a') do |f|
+      f.puts message
+    end
+  end
+
+  def self.log_purchase(product, file)
+    log("Purchased #{product.name.to_s}", file)
+  end
+end
 class Nanomart
   class NoSale < StandardError; end
 
@@ -65,8 +76,6 @@ module Restriction
 end
 
 class Item
-  INVENTORY_LOG = 'inventory.log'
-
   def initialize(logfile)
     @logfile = logfile
   end
