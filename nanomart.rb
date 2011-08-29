@@ -10,6 +10,7 @@ class Log
   end
 
   def self.log_purchase(product, file)
+    return unless file
     log("Purchased #{product.name.to_s}", file)
   end
 end
@@ -88,6 +89,7 @@ class Item
 
   def try_purchase(success)
     if success
+      Log.log_purchase(self, nil)
       return true
     else
       raise Nanomart::NoSale

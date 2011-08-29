@@ -86,3 +86,12 @@ describe Log do
     File.read(logfile.path).strip.should == 'Purchased beer'
   end
 end
+
+describe Item do
+  describe '#log_sale' do
+    it 'should call Log.log_purchase' do
+      Log.should_receive(:log_purchase)
+      Item::CannedHaggis.new(nil).try_purchase(true)
+    end
+  end
+end
