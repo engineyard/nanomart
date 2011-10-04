@@ -2,5 +2,5 @@ This code is terrible.
 
 Clean it up.
 
-Run the tests with @bundle exec spec nanomart_spec.rb@
+Run the tests with @bundle exec rspec nanomart_spec.rb@
 
