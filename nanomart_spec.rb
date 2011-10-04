@@ -7,8 +7,8 @@ class Age9
   def get_age() 9 end
 end
 
-class Age19
-  def get_age() 19 end
+class Age18
+  def get_age() 18 end
 end
 
 class Age99
@@ -35,7 +35,7 @@ describe "making sure the customer is old enough" do
 
   context "when you're a newly-minted adult" do
     before(:each) do
-      @nanomart = Nanomart.new('/dev/null', Age19.new)
+      @nanomart = Nanomart.new('/dev/null', Age18.new)
     end
 
     it "lets you buy cola, canned haggis, and cigarettes (to hide the taste of the haggis)" do
