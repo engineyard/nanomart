@@ -25,9 +25,7 @@ class Nanomart
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
 
-    itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
-    end
+    itm.try_purchase
     itm.log_sale
   end
 end
@@ -107,48 +105,45 @@ class Item
     class_sym
   end
 
-  def try_purchase(success)
-    if success
-      return true
-    else
-      raise Nanomart::NoSale
+  def try_purchase
+    restrictions.each do |r|
+      r.new(@prompter).ck or raise Nanomart::NoSale
     end
+
+    true
+  end
+
+  def restrictions
+    []
   end
 
   class Beer < Item
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter)]
+    def restrictions
+      [Restriction::DrinkingAge]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
+    def restrictions
+      [Restriction::DrinkingAge, Restriction::SundayBlueLaw]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
-    def rstrctns
-      [Restriction::SmokingAge.new(@prompter)]
+    def restrictions
+      [Restriction::SmokingAge]
     end
   end
 
   class Cola < Item
-    def rstrctns
-      []
-    end
   end
 
   class CannedHaggis < Item
     # the common-case implementation of Item.nam doesn't work here
     def nam
       :canned_haggis
-    end
-
-    def rstrctns
-      []
     end
   end
 end

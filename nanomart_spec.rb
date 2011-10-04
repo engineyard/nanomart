@@ -77,3 +77,54 @@ describe "making sure the customer is old enough" do
   end
 end
 
+class Item
+  class AgeRestricted < Item
+    def restrictions
+      [Restriction::SmokingAge]
+    end
+  end
+end
+
+describe Item do
+  context "when trying to purchase" do
+    context "without any restrictions" do
+      it "should allow a kid to purchase by purchase" do
+        itm = Item.new('/dev/null', Age9.new)
+
+	itm.try_purchase.should be_true
+      end
+
+      it "should allow a newly-minted adult to purchase" do
+        itm = Item.new('/dev/null', Age18.new)
+
+	itm.try_purchase.should be_true
+      end
+
+      it "should allow an old fokey to purchase" do
+        itm = Item.new('/dev/null', Age99.new)
+
+	itm.try_purchase.should be_true
+      end
+    end
+
+    context "with an age restriction of 18" do
+      it "should not allow a kid to purchase by purchase" do
+        itm = Item::AgeRestricted.new('/dev/null', Age9.new)
+
+	lambda { itm.try_purchase }.should raise_error(Nanomart::NoSale)
+      end
+
+      it "should allow a newly-minted adult to purchase" do
+        itm = Item::AgeRestricted.new('/dev/null', Age18.new)
+
+	itm.try_purchase.should be_true
+      end
+
+      it "should allow an old fokey to purchase" do
+        itm = Item::AgeRestricted.new('/dev/null', Age18.new)
+
+	itm.try_purchase.should be_true
+      end
+    end
+  end
+end
