@@ -12,21 +12,27 @@ class Nanomart
   def sell_me(itm_type)
     itm = case itm_type
           when :beer
-            Item::Beer.new(@logfile, @prompter)
+            Item::Beer.new(@prompter)
           when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
+            Item::Whiskey.new(@prompter)
           when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
+            Item::Cigarettes.new(@prompter)
           when :cola
-            Item::Cola.new(@logfile, @prompter)
+            Item::Cola.new(@prompter)
           when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
+            Item::CannedHaggis.new(@prompter)
           else
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
 
     itm.try_purchase
-    itm.log_sale
+    log_sale(itm)
+  end
+
+  def log_sale(item)
+    File.open(@logfile, 'a') do |f|
+      f.write(item.nam.to_s + "\n")
+    end
   end
 end
 
@@ -87,14 +93,8 @@ end
 class Item
   INVENTORY_LOG = 'inventory.log'
 
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
-  end
-
-  def log_sale
-    File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
-    end
+  def initialize(prompter)
+    @prompter = prompter
   end
 
   def nam
