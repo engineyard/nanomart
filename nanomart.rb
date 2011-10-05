@@ -48,12 +48,8 @@ module Restriction
   SMOKING_AGE = 18
 
   class DrinkingAge
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
-      age = @prompter.get_age
+    def ck(p)
+      age = p.get_age
       if age >= DRINKING_AGE
         true
       else
@@ -63,12 +59,8 @@ module Restriction
   end
 
   class SmokingAge
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
-      age = @prompter.get_age
+    def ck(p)
+      age = p.get_age
       if age >= SMOKING_AGE
         true
       else
@@ -78,11 +70,7 @@ module Restriction
   end
 
   class SundayBlueLaw
-    def initialize(p)
-      @prompter = p
-    end
-
-    def ck
+    def ck(p)
       # pp Time.now.wday
       # debugger
       Time.now.wday != 0      # 0 is Sunday
@@ -103,7 +91,7 @@ class Item
 
   def try_purchase(prompter)
     restrictions.each do |r|
-      r.new(prompter).ck or raise Nanomart::NoSale
+      r.new.ck(prompter) or raise Nanomart::NoSale
     end
 
     true
