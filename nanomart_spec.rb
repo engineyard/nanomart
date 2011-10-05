@@ -98,15 +98,15 @@ describe "making sure the customer is old enough" do
     end
 
     it 'should log the item nam to the logfile' do
-      Nanomart.new(@logfile.path, Age9.new).log_sale(Item::AgeRestricted.new(Age9.new))
+      Nanomart.new(@logfile.path, Age9.new).log_sale(Item::AgeRestricted.new)
 
       @logfile.rewind
       @logfile.read.should == "agerestricted\n"
     end
 
     it 'should append additional items to the logfile' do
-      Nanomart.new(@logfile.path, Age9.new).log_sale(Item::AgeRestricted.new(Age9.new))
-      Nanomart.new(@logfile.path, Age9.new).log_sale(Item::AnotherItem.new(Age9.new))
+      Nanomart.new(@logfile.path, Age9.new).log_sale(Item::AgeRestricted.new)
+      Nanomart.new(@logfile.path, Age9.new).log_sale(Item::AnotherItem.new)
 
       @logfile.rewind
       @logfile.read.should == <<HERE
@@ -120,42 +120,38 @@ end
 describe Item do
   context "when trying to purchase" do
     context "without any restrictions" do
-      it "should allow a kid to purchase by purchase" do
-        itm = Item.new(Age9.new)
+      before :each do
+        @itm = Item.new
+      end
 
-	itm.try_purchase.should be_true
+      it "should allow a kid to purchase by purchase" do
+	@itm.try_purchase(Age9.new).should be_true
       end
 
       it "should allow a newly-minted adult to purchase" do
-        itm = Item.new(Age18.new)
-
-	itm.try_purchase.should be_true
+	@itm.try_purchase(Age18.new).should be_true
       end
 
       it "should allow an old fokey to purchase" do
-        itm = Item.new(Age99.new)
-
-	itm.try_purchase.should be_true
+	@itm.try_purchase(Age99.new).should be_true
       end
     end
 
     context "with an age restriction of 18" do
-      it "should not allow a kid to purchase by purchase" do
-        itm = Item::AgeRestricted.new(Age9.new)
+      before :each do
+        @itm = Item::AgeRestricted.new
+      end
 
-	lambda { itm.try_purchase }.should raise_error(Nanomart::NoSale)
+      it "should not allow a kid to purchase by purchase" do
+	lambda { @itm.try_purchase(Age9.new) }.should raise_error(Nanomart::NoSale)
       end
 
       it "should allow a newly-minted adult to purchase" do
-        itm = Item::AgeRestricted.new(Age18.new)
-
-	itm.try_purchase.should be_true
+	@itm.try_purchase(Age18.new).should be_true
       end
 
       it "should allow an old fokey to purchase" do
-        itm = Item::AgeRestricted.new(Age18.new)
-
-	itm.try_purchase.should be_true
+	@itm.try_purchase(Age18.new).should be_true
       end
     end
   end

@@ -12,20 +12,20 @@ class Nanomart
   def sell_me(itm_type)
     itm = case itm_type
           when :beer
-            Item::Beer.new(@prompter)
+            Item::Beer.new
           when :whiskey
-            Item::Whiskey.new(@prompter)
+            Item::Whiskey.new
           when :cigarettes
-            Item::Cigarettes.new(@prompter)
+            Item::Cigarettes.new
           when :cola
-            Item::Cola.new(@prompter)
+            Item::Cola.new
           when :canned_haggis
-            Item::CannedHaggis.new(@prompter)
+            Item::CannedHaggis.new
           else
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
 
-    itm.try_purchase
+    itm.try_purchase(@prompter)
     log_sale(itm)
   end
 
@@ -93,10 +93,6 @@ end
 class Item
   INVENTORY_LOG = 'inventory.log'
 
-  def initialize(prompter)
-    @prompter = prompter
-  end
-
   def nam
     class_string = self.class.to_s
     short_class_string = class_string.sub(/^Item::/, '')
@@ -105,9 +101,9 @@ class Item
     class_sym
   end
 
-  def try_purchase
+  def try_purchase(prompter)
     restrictions.each do |r|
-      r.new(@prompter).ck or raise Nanomart::NoSale
+      r.new(prompter).ck or raise Nanomart::NoSale
     end
 
     true
