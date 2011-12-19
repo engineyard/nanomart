@@ -10,6 +10,8 @@ class Nanomart
   end
 
   def sell_me(itm_type)
+    # This needs to be refactored so items can be sold on their own
+    # No need for this case statement with POLYMORPHISM!!!! :)
     itm = case itm_type
           when :beer
             Item::Beer.new(@logfile, @prompter)
@@ -25,10 +27,7 @@ class Nanomart
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
 
-    itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
-    end
-    itm.log_sale
+    item.purchase
   end
 end
 
@@ -48,7 +47,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def check
       age = @prompter.get_age
       if age >= DRINKING_AGE
         true
@@ -63,7 +62,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def check
       age = @prompter.get_age
       if age >= SMOKING_AGE
         true
@@ -78,7 +77,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def check
       # pp Time.now.wday
       # debugger
       Time.now.wday != 0      # 0 is Sunday
@@ -87,7 +86,7 @@ module Restriction
 end
 
 class Item
-  INVENTORY_LOG = 'inventory.log'
+  attr_reader :logfile, :prompter
 
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
@@ -95,60 +94,58 @@ class Item
 
   def log_sale
     File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+      f.write(name.to_s + "\n")
     end
   end
 
-  def nam
-    class_string = self.class.to_s
-    short_class_string = class_string.sub(/^Item::/, '')
-    lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
+ def restrictions
+    []
+ end
+
+  def name
+    raise 'Override in your subclasses. Name was complicated for no reason.'
   end
 
-  def try_purchase(success)
-    if success
-      return true
-    else
-      raise Nanomart::NoSale
-    end
+  def can_purchase?
+    restrictions.all? {|restriction| restriction.check }
+  end
+
+  def purchase
+    log_sale if can_purchase?
   end
 
   class Beer < Item
-    def rstrctns
+    def name; :beer end
+
+    def restrictions
       [Restriction::DrinkingAge.new(@prompter)]
     end
   end
 
   class Whiskey < Item
+    def name; :whiskey end
     # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
+    def restrictions
       [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
     end
   end
 
   class Cigarettes < Item
+    def name; :cigarettes end
     # you have to be of a certain age to buy tobacco
-    def rstrctns
+    def restrictions
       [Restriction::SmokingAge.new(@prompter)]
     end
   end
 
   class Cola < Item
-    def rstrctns
-      []
-    end
+    def name; :cola end
   end
 
   class CannedHaggis < Item
     # the common-case implementation of Item.nam doesn't work here
-    def nam
+    def name
       :canned_haggis
-    end
-
-    def rstrctns
-      []
     end
   end
 end
