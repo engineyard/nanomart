@@ -1,8 +1,8 @@
 source "http://rubygems.org"
 
-gem 'highline'
-
 group :test do
+  gem 'guard-rspec'
+  gem 'rb-fsevent'
   gem 'rake'
   gem 'rspec'
 end
