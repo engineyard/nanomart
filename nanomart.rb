@@ -3,8 +3,6 @@ require 'highline'
 
 
 class Item
-  INVENTORY_LOG = 'inventory.log'
-
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
   end
