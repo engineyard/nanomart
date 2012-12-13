@@ -23,6 +23,20 @@ class Item
     class_sym
   end
 
+  def restrictions
+    []
+  end
+
+  def can_purchase?
+    if restrictions.any?
+      restrictions.all? do |restriction|
+        restriction.new(@prompter).check
+      end
+    else
+      true
+    end
+  end
+
   def try_purchase(success)
     if success
       return true
@@ -32,39 +46,32 @@ class Item
   end
 
   class Beer < Item
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter)]
+    def restrictions
+      [Restriction::DrinkingAge]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
+    def restrictions
+      [Restriction::DrinkingAge, Restriction::SundayBlueLaw]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
-    def rstrctns
-      [Restriction::SmokingAge.new(@prompter)]
+    def restrictions
+      [Restriction::SmokingAge]
     end
   end
 
   class Cola < Item
-    def rstrctns
-      []
-    end
   end
 
   class CannedHaggis < Item
     # the common-case implementation of Item.nam doesn't work here
     def nam
       :canned_haggis
-    end
-
-    def rstrctns
-      []
     end
   end
 end
@@ -85,6 +92,11 @@ class Nanomart
     @logfile, @prompter = logfile, prompter
   end
 
+  # Sell an item by type.
+  #
+  # item_type - A type of item to sell.
+  #
+  # Returns nothing.
   def sell_me(item_type)
     if type = ITEM_MAPS[item_type]
       item = type.new(@logfile, @prompter)
@@ -92,10 +104,11 @@ class Nanomart
       raise ArgumentError, "Don't know how to sell #{item_type}"
     end
 
-    item.rstrctns.each do |r|
-      item.try_purchase(r.ck)
+    if item.can_purchase?
+      item.log_sale
+    else
+      raise Nanomart::NoSale
     end
-    item.log_sale
   end
 end
 
@@ -115,13 +128,8 @@ module Restriction
       @prompter = p
     end
 
-    def ck
-      age = @prompter.get_age
-      if age >= DRINKING_AGE
-        true
-      else
-        false
-      end
+    def check
+      @prompter.get_age >= DRINKING_AGE
     end
   end
 
@@ -130,7 +138,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def check
       age = @prompter.get_age
       if age >= SMOKING_AGE
         true
@@ -145,7 +153,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def check
       # pp Time.now.wday
       # debugger
       Time.now.wday != 0      # 0 is Sunday
