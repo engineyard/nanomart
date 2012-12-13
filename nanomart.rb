@@ -11,11 +11,11 @@ class Item
 
   def log_sale
     File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+      f.write(name.to_s + "\n")
     end
   end
 
-  def nam
+  def name
     class_string = self.class.to_s
     short_class_string = class_string.sub(/^Item::/, '')
     lower_class_string = short_class_string.downcase
@@ -34,14 +34,6 @@ class Item
       end
     else
       true
-    end
-  end
-
-  def try_purchase(success)
-    if success
-      return true
-    else
-      raise Nanomart::NoSale
     end
   end
 
@@ -69,13 +61,12 @@ class Item
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
+    # the common-case implementation of Item.name doesn't work here
+    def name
       :canned_haggis
     end
   end
 end
-
 
 class Nanomart
   class NoSale < StandardError; end
@@ -98,16 +89,19 @@ class Nanomart
   #
   # Returns nothing.
   def sell_me(item_type)
+    item = item_for_type(item_type)
+
+    raise Nanomart::NoSale unless item.can_purchase?
+    item.log_sale
+  end
+
+  private
+
+  def item_for_type(item_type)
     if type = ITEM_MAPS[item_type]
-      item = type.new(@logfile, @prompter)
+      type.new(@logfile, @prompter)
     else
       raise ArgumentError, "Don't know how to sell #{item_type}"
-    end
-
-    if item.can_purchase?
-      item.log_sale
-    else
-      raise Nanomart::NoSale
     end
   end
 end
@@ -117,7 +111,6 @@ class HighlinePrompter
     HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
   end
 end
-
 
 module Restriction
   DRINKING_AGE = 21
@@ -139,12 +132,7 @@ module Restriction
     end
 
     def check
-      age = @prompter.get_age
-      if age >= SMOKING_AGE
-        true
-      else
-        false
-      end
+      @prompter.get_age >= SMOKING_AGE
     end
   end
 
