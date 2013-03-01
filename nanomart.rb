@@ -5,26 +5,26 @@ require 'highline'
 class Nanomart
   class NoSale < StandardError; end
 
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
+  def initialize(logfile)
+    @logfile= logfile
   end
 
-  def sell_me(item_type)
-    item = Item.create_by_name(item_type, @prompter)
+  def sell_me(item_type, customer)
+    item = Item.create_by_name(item_type, customer)
 
     item.restrictions.each do |r|
       item.try_purchase(r.check)
     end
-    log_sale(item)
+    # log_sale(item)
   end
 
-  private
+  # private
 
-  def log_sale(item)
-    File.open(@logfile, 'a') do |f|
-      f.write(item.name.to_s + "\n")
-    end
-  end
+  # def log_sale(item)
+    # File.open(@logfile, 'a') do |f|
+      # f.write(item.name.to_s + "\n")
+    # end
+  # end
 end
 
 # class HighlinePrompter
@@ -33,6 +33,17 @@ end
   # end
 # end
 
+class Customer
+  attr_reader :age
+
+  def initialize(age)
+    @age = age
+  end
+
+  def get_age
+    @age
+  end
+end
 
 module Restriction
   DRINKING_AGE = 21
