@@ -9,34 +9,29 @@ class Nanomart
     @logfile, @prompter = logfile, prompter
   end
 
-  def sell_me(itm_type)
-    itm = case itm_type
-          when :beer
-            Item::Beer.new(@logfile, @prompter)
-          when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
-          when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
-          when :cola
-            Item::Cola.new(@logfile, @prompter)
-          when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
-          else
-            raise ArgumentError, "Don't know how to sell #{itm_type}"
-          end
+  def sell_me(item_type)
+    item = Item.create_by_name(item_type, @prompter)
 
-    itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
+    item.restrictions.each do |r|
+      item.try_purchase(r.check)
     end
-    itm.log_sale
+    log_sale(item)
+  end
+
+  private
+
+  def log_sale(item)
+    File.open(@logfile, 'a') do |f|
+      f.write(item.name.to_s + "\n")
+    end
   end
 end
 
-class HighlinePrompter
-  def get_age
-    HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
-  end
-end
+# class HighlinePrompter
+  # def get_age
+    # HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
+  # end
+# end
 
 
 module Restriction
@@ -48,7 +43,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def check
       age = @prompter.get_age
       if age >= DRINKING_AGE
         true
@@ -63,7 +58,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def check
       age = @prompter.get_age
       if age >= SMOKING_AGE
         true
@@ -78,7 +73,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def check
       # pp Time.now.wday
       # debugger
       Time.now.wday != 0      # 0 is Sunday
@@ -89,17 +84,11 @@ end
 class Item
   INVENTORY_LOG = 'inventory.log'
 
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
+  def initialize(prompter)
+    @prompter = prompter
   end
 
-  def log_sale
-    File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
-    end
-  end
-
-  def nam
+  def name
     class_string = self.class.to_s
     short_class_string = class_string.sub(/^Item::/, '')
     lower_class_string = short_class_string.downcase
@@ -115,39 +104,56 @@ class Item
     end
   end
 
+  def self.create_by_name(item_type, prompter)
+    case item_type
+    when :beer
+      Item::Beer.new(prompter)
+    when :whiskey
+      Item::Whiskey.new(prompter)
+    when :cigarettes
+      Item::Cigarettes.new(prompter)
+    when :cola
+      Item::Cola.new(prompter)
+    when :canned_haggis
+      Item::CannedHaggis.new(prompter)
+    else
+      raise ArgumentError, "Don't know how to sell #{item_type}"
+    end
+  end
+
   class Beer < Item
-    def rstrctns
+    def restrictions
       [Restriction::DrinkingAge.new(@prompter)]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
+    def restrictions
       [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
-    def rstrctns
+    def restrictions
       [Restriction::SmokingAge.new(@prompter)]
     end
   end
 
   class Cola < Item
-    def rstrctns
+    def restrictions
       []
     end
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
+    # the common-case implementation of Item.name doesn't work here
+    def name
       :canned_haggis
     end
 
-    def rstrctns
+    def restrictions
       []
     end
   end

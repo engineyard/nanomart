@@ -71,6 +71,13 @@ describe "making sure the customer is old enough" do
       Time.stub!(:now).and_return(Time.local(2010, 8, 15, 12))  # Sunday Aug 15 2010 12:00
     end
 
+    it "lets you buy things that are not hard liquor" do
+      lambda { @nanomart.sell_me(:cola)          }.should_not raise_error
+      lambda { @nanomart.sell_me(:canned_haggis) }.should_not raise_error
+      lambda { @nanomart.sell_me(:cigarettes)    }.should_not raise_error
+      lambda { @nanomart.sell_me(:beer)          }.should_not raise_error
+    end
+
     it "stops you from buying hard alcohol" do
       lambda { @nanomart.sell_me(:whiskey)       }.should raise_error(Nanomart::NoSale)
     end
