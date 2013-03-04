@@ -2,36 +2,6 @@
 require 'highline'
 
 
-class Nanomart
-  class NoSale < StandardError; end
-
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
-  end
-
-  def sell_me(itm_type)
-    itm = case itm_type
-          when :beer
-            Item::Beer.new(@logfile, @prompter)
-          when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
-          when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
-          when :cola
-            Item::Cola.new(@logfile, @prompter)
-          when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
-          else
-            raise ArgumentError, "Don't know how to sell #{itm_type}"
-          end
-
-    itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
-    end
-    itm.log_sale
-  end
-end
-
 class HighlinePrompter
   def get_age
     HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
@@ -95,12 +65,12 @@ class Item
 
   def log_sale
     File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+      f.write(self.class.name.to_s + "\n")
     end
   end
 
-  def nam
-    class_string = self.class.to_s
+  def self.name
+    class_string = self.to_s
     short_class_string = class_string.sub(/^Item::/, '')
     lower_class_string = short_class_string.downcase
     class_sym = lower_class_string.to_sym
@@ -116,40 +86,66 @@ class Item
   end
 
   class Beer < Item
-    def rstrctns
+     def restrictions
       [Restriction::DrinkingAge.new(@prompter)]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
+
+    def restrictions
       [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
-    def rstrctns
+
+    def restrictions
       [Restriction::SmokingAge.new(@prompter)]
     end
   end
 
   class Cola < Item
-    def rstrctns
+
+    def restrictions
       []
     end
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
-      :canned_haggis
+    def self.name
+    	:canned_haggis
     end
 
-    def rstrctns
+    def restrictions
       []
     end
   end
 end
+
+class Nanomart
+  class NoSale < StandardError; end
+
+  ITEM_CLASSES = [Item::Beer, Item::Whiskey, Item::Cigarettes, Item::Cola, Item::CannedHaggis]
+
+  def initialize(logfile, prompter)
+    @logfile, @prompter = logfile, prompter
+  end
+
+  def sell_me(item_type)
+    item_class = ITEM_CLASSES.detect do | item_class | 
+        item_class.name == item_type
+    end
+    item = item_class.new(@logfile, @prompter)
+
+    item.restrictions.each do |r|
+      item.try_purchase(r.ck)
+    end
+    item.log_sale
+  end
+end
+
+
 
