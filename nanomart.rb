@@ -10,37 +10,16 @@ end
 
 
 module Restriction
-  DRINKING_AGE = 21
-  SMOKING_AGE = 18
-
-  class DrinkingAge
-    def initialize(p)
-      @prompter = p
+  class MinimumAge
+    def initialize(minimum_age, prompter)
+    	@minimum_age = minimum_age
+	@prompter = prompter	
     end
-
+    
     def purchase_allowed?
-      if @prompter.get_age >= DRINKING_AGE
-        true
-      else
-        false
-      end
+      @prompter.get_age >= @minimum_age
     end
-  end
-
-  class SmokingAge
-    def initialize(p)
-      @prompter = p
-    end
-
-    def purchase_allowed?
-      age = @prompter.get_age
-      if age >= SMOKING_AGE
-        true
-      else
-        false
-      end
-    end
-  end
+  end 
 
   class SundayBlueLaw
     def initialize(p)
@@ -48,15 +27,15 @@ module Restriction
     end
 
     def purchase_allowed?
-      # pp Time.now.wday
-      # debugger
-      Time.now.wday != 0      # 0 is Sunday
+      not Time.now.sunday?
     end
   end
 end
 
 class Item
   INVENTORY_LOG = 'inventory.log'
+  DRINKING_AGE = 21
+  SMOKING_AGE = 18
 
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
@@ -86,7 +65,7 @@ class Item
 
   class Beer < Item
      def restrictions
-      [Restriction::DrinkingAge.new(@prompter)]
+      [Restriction::MinimumAge.new(DRINKING_AGE, @prompter)]
     end
   end
 
@@ -94,7 +73,7 @@ class Item
     # you can't sell hard liquor on Sundays for some reason
 
     def restrictions
-      [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
+      [Restriction::MinimumAge.new(DRINKING_AGE, @prompter), Restriction::SundayBlueLaw.new(@prompter)]
     end
   end
 
@@ -102,7 +81,7 @@ class Item
     # you have to be of a certain age to buy tobacco
 
     def restrictions
-      [Restriction::SmokingAge.new(@prompter)]
+      [Restriction::MinimumAge.new(SMOKING_AGE, @prompter)]
     end
   end
 
