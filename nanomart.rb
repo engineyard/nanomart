@@ -18,9 +18,8 @@ module Restriction
       @prompter = p
     end
 
-    def ck
-      age = @prompter.get_age
-      if age >= DRINKING_AGE
+    def purchase_allowed?
+      if @prompter.get_age >= DRINKING_AGE
         true
       else
         false
@@ -33,7 +32,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def purchase_allowed?
       age = @prompter.get_age
       if age >= SMOKING_AGE
         true
@@ -48,7 +47,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def purchase_allowed?
       # pp Time.now.wday
       # debugger
       Time.now.wday != 0      # 0 is Sunday
@@ -77,11 +76,11 @@ class Item
     class_sym
   end
 
-  def try_purchase(success)
-    if success
-      return true
-    else
-      raise Nanomart::NoSale
+  def try_purchase
+    restrictions.each do | r |
+       if not r.purchase_allowed?
+           raise Nanomart::NoSale       
+       end
     end
   end
 
@@ -140,9 +139,8 @@ class Nanomart
     end
     item = item_class.new(@logfile, @prompter)
 
-    item.restrictions.each do |r|
-      item.try_purchase(r.ck)
-    end
+    item.try_purchase
+
     item.log_sale
   end
 end
