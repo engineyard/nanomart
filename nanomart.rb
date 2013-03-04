@@ -1,7 +1,6 @@
 # you can buy just a few things at this nanomart
 require 'highline'
 
-
 class HighlinePrompter
   def get_age
     HighLine.new.ask('Age? ', Integer) # prompts for user's age, reads it in
@@ -17,6 +16,7 @@ module Restriction
     end
     
     def purchase_allowed?
+      # Consider making this throw a Nanomart::NoSale instead of returning a boolean
       @prompter.get_age >= @minimum_age
     end
   end 
@@ -33,26 +33,27 @@ module Restriction
 end
 
 class Item
-  INVENTORY_LOG = 'inventory.log'
   DRINKING_AGE = 21
   SMOKING_AGE = 18
 
   def initialize(logfile, prompter)
+    # logfile and prompter shouldn't be passed into the items
     @logfile, @prompter = logfile, prompter
   end
 
+  def restrictions
+    []
+  end
+
   def log_sale
+    # logging responsibility should not be on item instances
     File.open(@logfile, 'a') do |f|
       f.write(self.class.name.to_s + "\n")
     end
   end
 
   def self.name
-    class_string = self.to_s
-    short_class_string = class_string.sub(/^Item::/, '')
-    lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
+    self.to_s.sub(/^Item::/, '').downcase.to_sym
   end
 
   def try_purchase
@@ -64,6 +65,7 @@ class Item
   end
 
   class Beer < Item
+     # Consider making an Alcohol item to consolidate instantiation of DRINKING_AGE restriction
      def restrictions
       [Restriction::MinimumAge.new(DRINKING_AGE, @prompter)]
     end
@@ -86,10 +88,6 @@ class Item
   end
 
   class Cola < Item
-
-    def restrictions
-      []
-    end
   end
 
   class CannedHaggis < Item
@@ -97,9 +95,6 @@ class Item
     	:canned_haggis
     end
 
-    def restrictions
-      []
-    end
   end
 end
 
@@ -113,6 +108,7 @@ class Nanomart
   end
 
   def sell_me(item_type)
+    # Move this block to a method
     item_class = ITEM_CLASSES.detect do | item_class | 
         item_class.name == item_type
     end
