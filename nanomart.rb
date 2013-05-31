@@ -10,25 +10,30 @@ class Nanomart
   end
 
   def sell_me(itm_type)
-    itm = case itm_type
+    
+
+
+
+
+    success = case itm_type
           when :beer
-            Item::Beer.new(@logfile, @prompter)
+            Item::Beer.purchasable(@logfile, @prompter)
           when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
+            Item::Whiskey.purchasable(@logfile, @prompter)
           when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
+            Item::Cigarettes.purchasable(@logfile, @prompter)
           when :cola
-            Item::Cola.new(@logfile, @prompter)
+            Item::Cola.purchasable(@logfile, @prompter)
           when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
+            Item::CannedHaggis.purchasable(@logfile, @prompter)
           else
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
 
-    itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
-    end
-    itm.log_sale
+    #itm.restrictions.each do |r|
+      #itm.try_purchase(r.ck)
+    #end
+    #itm.log_sale
   end
 end
 
@@ -42,6 +47,22 @@ end
 module Restriction
   DRINKING_AGE = 21
   SMOKING_AGE = 18
+
+  class AgeChecker
+    def initialize(p, item)
+      @prompter = p
+    end
+
+    def check_
+      age = @prompter.get_age
+      if age >= DRINKING_AGE
+        true
+      else
+        false
+      end
+    end
+    
+  end
 
   class DrinkingAge
     def initialize(p)
@@ -89,6 +110,12 @@ end
 class Item
   INVENTORY_LOG = 'inventory.log'
 
+  def self.purchasable(logfile, prompter)
+    restrictions.each do |r|
+      try_purchase(r.ck)
+    end
+  end
+
   def initialize(logfile, prompter)
     @logfile, @prompter = logfile, prompter
   end
@@ -116,27 +143,27 @@ class Item
   end
 
   class Beer < Item
-    def rstrctns
+    def self.restrictions
       [Restriction::DrinkingAge.new(@prompter)]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
+    def self.restrictions
       [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
-    def rstrctns
+    def self.restrictions
       [Restriction::SmokingAge.new(@prompter)]
     end
   end
 
   class Cola < Item
-    def rstrctns
+    def self.restrictions
       []
     end
   end
@@ -147,7 +174,7 @@ class Item
       :canned_haggis
     end
 
-    def rstrctns
+    def self.restrictions
       []
     end
   end
