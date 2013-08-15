@@ -5,30 +5,30 @@ require 'highline'
 class Nanomart
   class NoSale < StandardError; end
 
-  def initialize(logfile, prompter)
-    @logfile, @prompter = logfile, prompter
+  def initialize(logfile)
+    @logfile = logfile
   end
 
-  def sell_me(itm_type)
-    itm = case itm_type
+  def sell_me(item_type, prompter)
+    item = case item_type
           when :beer
-            Item::Beer.new(@logfile, @prompter)
+            Item::Beer.new(@logfile, prompter)
           when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
+            Item::Whiskey.new(@logfile, prompter)
           when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
+            Item::Cigarettes.new(@logfile, prompter)
           when :cola
-            Item::Cola.new(@logfile, @prompter)
+            Item::Cola.new(@logfile, prompter)
           when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
+            Item::CannedHaggis.new(@logfile, prompter)
           else
-            raise ArgumentError, "Don't know how to sell #{itm_type}"
+            raise ArgumentError, "Don't know how to sell #{item_type}"
           end
 
-    itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
+    item.restrictions.each do |r|
+      item.try_purchase(r.ck)
     end
-    itm.log_sale
+    item.log_sale
   end
 end
 
@@ -100,11 +100,7 @@ class Item
   end
 
   def nam
-    class_string = self.class.to_s
-    short_class_string = class_string.sub(/^Item::/, '')
-    lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
+    self.class.to_s.sub(/^Item::/, '').downcase.to_sym
   end
 
   def try_purchase(success)
@@ -116,27 +112,27 @@ class Item
   end
 
   class Beer < Item
-    def rstrctns
+    def restrictions
       [Restriction::DrinkingAge.new(@prompter)]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
+    def restrictions
       [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
-    def rstrctns
+    def restrictions
       [Restriction::SmokingAge.new(@prompter)]
     end
   end
 
   class Cola < Item
-    def rstrctns
+    def restrictions
       []
     end
   end
@@ -147,7 +143,7 @@ class Item
       :canned_haggis
     end
 
-    def rstrctns
+    def restrictions
       []
     end
   end
