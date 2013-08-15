@@ -25,10 +25,9 @@ class Nanomart
             raise ArgumentError, "Don't know how to sell #{item_type}"
           end
 
-    item.restrictions.each do |r|
-      item.try_purchase(r.ck)
-    end
-    item.log_sale
+    allowed_to_purchase = item.restrictions.all? &:allowed?
+    item.log_sale if allowed_to_purchase
+    return allowed_to_purchase
   end
 end
 
@@ -48,13 +47,10 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def allowed?
       age = @prompter.get_age
-      if age >= DRINKING_AGE
-        true
-      else
-        false
-      end
+
+      age >= DRINKING_AGE
     end
   end
 
@@ -63,13 +59,10 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def allowed?
       age = @prompter.get_age
-      if age >= SMOKING_AGE
-        true
-      else
-        false
-      end
+
+      age >= SMOKING_AGE
     end
   end
 
@@ -78,7 +71,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
+    def allowed?
       # pp Time.now.wday
       # debugger
       Time.now.wday != 0      # 0 is Sunday
@@ -95,20 +88,12 @@ class Item
 
   def log_sale
     File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+      f.write(name.to_s + "\n")
     end
   end
 
-  def nam
+  def name
     self.class.to_s.sub(/^Item::/, '').downcase.to_sym
-  end
-
-  def try_purchase(success)
-    if success
-      return true
-    else
-      raise Nanomart::NoSale
-    end
   end
 
   class Beer < Item
@@ -138,8 +123,8 @@ class Item
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
+    # the common-case implementation of Item.name doesn't work here
+    def name
       :canned_haggis
     end
 

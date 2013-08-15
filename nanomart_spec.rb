@@ -20,14 +20,14 @@ describe "making sure the customer is old enough" do
     let(:age) { 9 }
 
     it "lets you buy cola and canned haggis" do
-      lambda { sell(:cola)          }.should_not raise_error
-      lambda { sell(:canned_haggis) }.should_not raise_error
+      expect(sell(:cola)).to be_true
+      expect(sell(:canned_haggis)).to be_true
     end
 
     it "stops you from buying anything age-restricted" do
-      lambda { sell(:beer)       }.should raise_error(Nanomart::NoSale)
-      lambda { sell(:whiskey)    }.should raise_error(Nanomart::NoSale)
-      lambda { sell(:cigarettes) }.should raise_error(Nanomart::NoSale)
+      expect(sell(:beer)).to be_false
+      expect(sell(:whiskey)).to be_false
+      expect(sell(:cigarettes)).to be_false
     end
   end
 
@@ -35,14 +35,14 @@ describe "making sure the customer is old enough" do
     let(:age) { 19 }
 
     it "lets you buy cola, canned haggis, and cigarettes (to hide the taste of the haggis)" do
-      lambda { sell(:cola)          }.should_not raise_error
-      lambda { sell(:canned_haggis) }.should_not raise_error
-      lambda { sell(:cigarettes)    }.should_not raise_error
+      expect(sell(:cola)).to be_true
+      expect(sell(:canned_haggis)).to be_true
+      expect(sell(:cigarettes)).to be_true
     end
 
     it "stops you from buying anything age-restricted" do
-      lambda { sell(:beer)       }.should raise_error(Nanomart::NoSale)
-      lambda { sell(:whiskey)    }.should raise_error(Nanomart::NoSale)
+      expect(sell(:beer)).to be_false
+      expect(sell(:whiskey)).to be_false
     end
   end
 
@@ -54,11 +54,11 @@ describe "making sure the customer is old enough" do
     end
 
     it "lets you buy everything" do
-      lambda { sell(:cola)          }.should_not raise_error
-      lambda { sell(:canned_haggis) }.should_not raise_error
-      lambda { sell(:cigarettes)    }.should_not raise_error
-      lambda { sell(:beer)          }.should_not raise_error
-      lambda { sell(:whiskey)       }.should_not raise_error
+      expect(sell(:cola)).to be_true
+      expect(sell(:canned_haggis)).to be_true
+      expect(sell(:cigarettes)).to be_true
+      expect(sell(:beer)).to be_true
+      expect(sell(:whiskey)).to be_true
     end
   end
 
@@ -70,7 +70,7 @@ describe "making sure the customer is old enough" do
     end
 
     it "stops you from buying hard alcohol" do
-      lambda { sell(:whiskey)       }.should raise_error(Nanomart::NoSale)
+      expect(sell(:whiskey)).to be_false
     end
   end
 end
