@@ -9,26 +9,38 @@ class Nanomart
     @logfile, @prompter = logfile, prompter
   end
 
-  def sell_me(itm_type)
-    itm = case itm_type
-          when :beer
-            Item::Beer.new(@logfile, @prompter)
-          when :whiskey
-            Item::Whiskey.new(@logfile, @prompter)
-          when :cigarettes
-            Item::Cigarettes.new(@logfile, @prompter)
-          when :cola
-            Item::Cola.new(@logfile, @prompter)
-          when :canned_haggis
-            Item::CannedHaggis.new(@logfile, @prompter)
-          else
-            raise ArgumentError, "Don't know how to sell #{itm_type}"
-          end
+  def sell_item (item, age)
+    if can_sell(item, age)
 
-    itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
+      sell_it(item)
+    else
+      prevent_sale(item)
     end
-    itm.log_sale
+  end
+
+  def can_sell item, age
+    item = item_for item_type
+    restrictions_for item
+
+    item.rstrctns.each do |r|
+      can_be_purchased = item.try_purchase(r.ck)
+      return true if can_be_purchased
+    end
+  end
+
+  def item_for (item_type)
+    allowed_types =  { :beer => Item::Beer, :whiskey => Item::Whiskey, :cola => Item::Cola, :cigarettes => Item::Cigarettes, :canned_haggis => Item::CannedHaggis }
+
+    if allowed_types[item_type]
+      itm = allowed_types[item_type].new(@logfile, @prompter)
+    else
+      raise ArgumentError, "Don't know how to sell #{item_type}"
+    end
+  end
+
+  def sell_me(item_type)
+    sell_item(item_type, @prompter.get_age)
+    item.log_sale
   end
 end
 
