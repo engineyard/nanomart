@@ -25,10 +25,14 @@ class Nanomart
             raise ArgumentError, "Don't know how to sell #{itm_type}"
           end
 
-    itm.rstrctns.each do |r|
-      itm.try_purchase(r.ck)
+    sales = itm.restrictions.map do |r|
+      r.check
     end
-    itm.log_sale
+
+    if sale = sales.none? { |s| !s }
+      itm.log_sale
+    end
+    sale
   end
 end
 
@@ -48,13 +52,8 @@ module Restriction
       @prompter = p
     end
 
-    def ck
-      age = @prompter.get_age
-      if age >= DRINKING_AGE
-        true
-      else
-        false
-      end
+    def check
+      @prompter.get_age >= DRINKING_AGE
     end
   end
 
@@ -63,13 +62,8 @@ module Restriction
       @prompter = p
     end
 
-    def ck
-      age = @prompter.get_age
-      if age >= SMOKING_AGE
-        true
-      else
-        false
-      end
+    def check
+      @prompter.get_age >= SMOKING_AGE
     end
   end
 
@@ -78,9 +72,7 @@ module Restriction
       @prompter = p
     end
 
-    def ck
-      # pp Time.now.wday
-      # debugger
+    def check
       Time.now.wday != 0      # 0 is Sunday
     end
   end
@@ -95,59 +87,50 @@ class Item
 
   def log_sale
     File.open(@logfile, 'a') do |f|
-      f.write(nam.to_s + "\n")
+      f.write(name.to_s + "\n")
     end
   end
 
-  def nam
+  def name
     class_string = self.class.to_s
     short_class_string = class_string.sub(/^Item::/, '')
     lower_class_string = short_class_string.downcase
-    class_sym = lower_class_string.to_sym
-    class_sym
-  end
-
-  def try_purchase(success)
-    if success
-      return true
-    else
-      raise Nanomart::NoSale
-    end
+    lower_class_string.to_sym
   end
 
   class Beer < Item
-    def rstrctns
+    def restrictions
       [Restriction::DrinkingAge.new(@prompter)]
     end
   end
 
   class Whiskey < Item
     # you can't sell hard liquor on Sundays for some reason
-    def rstrctns
+    def restrictions
       [Restriction::DrinkingAge.new(@prompter), Restriction::SundayBlueLaw.new(@prompter)]
     end
   end
 
   class Cigarettes < Item
     # you have to be of a certain age to buy tobacco
-    def rstrctns
+    def restrictions
       [Restriction::SmokingAge.new(@prompter)]
     end
   end
 
   class Cola < Item
-    def rstrctns
+    def restrictions
       []
     end
   end
 
   class CannedHaggis < Item
-    # the common-case implementation of Item.nam doesn't work here
-    def nam
+    # the common-case implementation of Item.name doesn't work here
+    def name
       :canned_haggis
     end
 
-    def rstrctns
+    def restrictions
       []
     end
   end
